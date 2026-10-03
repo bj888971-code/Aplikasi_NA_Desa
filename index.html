@@ -135,7 +135,7 @@ async function callApi(action, payload = {}) {
       body: JSON.stringify(payload)
     });
     const json = await res.json();
-    syncStatus = 'success';
+    syncStatus = (json && json.status === 'success') ? 'success' : 'error';
     updateCloudBadge();
     return json;
   } catch (err) {
@@ -381,10 +381,10 @@ function settingsView() {
     <p style="font-size:13px;color:var(--mut);margin-bottom:14px;">Masukkan Web App URL dari Google Apps Script untuk menyinkronkan data secara otomatis ke Google Sheets.</p>
     <div style="margin-bottom:14px;">
       <label>Google Apps Script Web App URL
-        <input type="url" id="api_url_input" placeholder="https://script.google.com/macros/s/AKfycbxBp6fG5qWKb4Vu4RhdkJcqHzFbaeO1Axd3PAx1-8wYVg8sjzG1YW-oVT7W3TYPNo1z/exec" value="${esc(apiUrl)}">
+        <input type="url" id="api_url_input" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(apiUrl)}">
       </label>
     </div>
-    <div style="display:flex;gap:10px;align-items:center;">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <button class="b" id="save_api">Simpan & Hubungkan</button>
       <button class="b o" id="test_api">Uji Koneksi</button>
       <span id="api_test_res" style="font-size:13px;"></span>
@@ -393,13 +393,14 @@ function settingsView() {
   <div class="panel">
     <h3>Petunjuk Pemasangan Backend</h3>
     <ol style="font-size:13px;line-height:1.7;padding-left:20px;color:var(--ink);">
-      <li>Buka Google Sheets baru dan pilih menu <b>Ekstensi &gt; Apps Script</b>.</li>
-      <li>Salin seluruh kode dari file <code>Code.gs</code> ke dalam editor Apps Script.</li>
+      <li>Buka Google Sheets Anda dan pilih menu <b>Ekstensi &gt; Apps Script</b>.</li>
+      <li>Salin seluruh kode dari file <code>Code.gs</code> yang baru ke dalam editor Apps Script.</li>
       <li>Jalankan fungsi <code>setupDatabase</code> satu kali.</li>
       <li>Klik <b>Terapkan (Deploy) &gt; Terapkan sebagai Aplikasi Web (New deployment)</b>.</li>
-      <li>Atur <i>Jalankan Sebagai</i>: <b>Saya (Me)</b>.</li>
-      <li>Atur <i>Siapa yang memiliki akses</i>: <b>Siapa saja (Anyone)</b>.</li>
+      <li>Atur <i>Jalankan Sebagai (Execute as)</i>: <b>Saya (Me)</b>.</li>
+      <li>Atur <i>Siapa yang memiliki akses (Who has access)</i>: <b>Siapa saja (Anyone)</b>.</li>
       <li>Salin URL Aplikasi Web yang dihasilkan dan tempelkan pada kolom di atas.</li>
+      <li><b>PENTING:</b> Jika Anda memperbarui kode yang sudah ada, buatlah <b>Versi Baru (New Version)</b> pada menu Deployment.</li>
     </ol>
   </div>`;
 
@@ -422,7 +423,7 @@ function settingsView() {
     resEl.style.color = 'var(--mut)';
     resEl.innerText = 'Mencoba menghubungkan...';
     try {
-      const res = await fetch(testUrl + '?action=getAll');
+      const res = await fetch(testUrl + '?action=ping');
       const json = await res.json();
       if(json && json.status === 'success') {
         resEl.style.color = 'var(--ok)';
