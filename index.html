@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dasbor Berkas Nikah Desa</title>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{--bg:#f3f1ea;--panel:#fff;--ink:#1d2b24;--mut:#5f6f66;--line:#d9d6c8;--pri:#1f5c46;--pri-ink:#fff;--acc:#e0a526;--warn:#9a5b00;--warnbg:#fbeccb;--ok:#1f5c46;--okbg:#dcefe5;--bad:#a3341f;--badbg:#f6dcd6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a16;--panel:#1b2620;--ink:#e8eee9;--mut:#9fb0a6;--line:#2f3d35;--pri:#5cb890;--pri-ink:#0d1a13;--acc:#e8b73f;--warn:#f0c46a;--warnbg:#3a2f12;--ok:#7fd0a8;--okbg:#18372a;--bad:#f09a88;--badbg:#3d1d17}}
+:root[data-theme="dark"]{--bg:#121a16;--panel:#1b2620;--ink:#e8eee9;--mut:#9fb0a6;--line:#2f3d35;--pri:#5cb890;--pri-ink:#0d1a13;--acc:#e8b73f;--warn:#f0c46a;--warnbg:#3a2f12;--ok:#7fd0a8;--okbg:#18372a;--bad:#f09a88;--badbg:#3d1d17}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "Public Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:Bitter,Georgia,serif;margin:0;line-height:1.25}
+
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+aside{background:var(--pri);color:var(--pri-ink);padding:22px 16px;display:flex;flex-direction:column;gap:6px}
+aside h1{font-size:19px;margin-bottom:4px}
+aside p{margin:0 0 18px;font-size:13px;opacity:.85}
+.nav{background:none;border:0;color:inherit;text-align:left;padding:10px 12px;border-radius:6px;font:inherit;cursor:pointer;border-left:4px solid transparent}
+.nav[aria-current=true]{background:rgba(255,255,255,.16);border-left-color:var(--acc);font-weight:600}
+main{padding:26px clamp(14px,3vw,36px);min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.top h2{font-size:24px}
+
+button.b,.b{font:600 14px "Public Sans",sans-serif;padding:9px 16px;border-radius:6px;border:1px solid var(--pri);background:var(--pri);color:var(--pri-ink);cursor:pointer}
+.b.o{background:transparent;color:var(--pri)}
+.b.d{background:transparent;color:var(--bad);border-color:var(--bad)}
+.b.s{padding:5px 10px;font-size:13px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:22px}
+.st{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.st b{display:block;font:700 30px Bitter,serif;color:var(--pri)}
+.st span{color:var(--mut);font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
+.panel h3{font-size:17px;margin-bottom:12px}
+.tw{overflow-x:auto}
+table.l{width:100%;border-collapse:collapse;min-width:560px}
+.l th,.l td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.l th{font-weight:600;color:var(--mut);font-size:13px}
+.tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600;margin:1px 3px 1px 0}
+.tag.w{background:var(--warnbg);color:var(--warn)}.tag.k{background:var(--badbg);color:var(--bad)}.tag.g{background:var(--okbg);color:var(--ok)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 14px}
+label{display:block;font-size:13px;color:var(--mut);font-weight:500}
+input,select{width:100%;margin-top:3px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+.empty{color:var(--mut);padding:22px;text-align:center}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs .b{padding:6px 12px}
+.tabs .b[aria-pressed=false]{background:transparent;color:var(--pri)}
+
+.paper{background:#fff;color:#000;max-width:800px;margin:0 auto;padding:40px 48px;font:12pt/1.45 "Times New Roman",Times,serif;border:1px solid var(--line);overflow-x:auto}
+.paper h4{text-align:center;margin:14px 0 2px;font-size:13pt;text-decoration:underline}
+.paper .no{text-align:center;margin-bottom:14px}
+
+.paper .kop{display:flex;align-items:center;justify-content:space-between;border-bottom:3px double #000;padding-bottom:10px;margin-bottom:14px;min-height:90px}
+.paper .kop-logo{width:80px;height:90px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.paper .kop-logo svg, .paper .kop-logo img{max-width:100%;max-height:100%;object-fit:contain}
+.paper .kop-text{flex:1;text-align:center;font-weight:700;font-size:13pt;line-height:1.3;padding:0 12px;text-transform:uppercase}
+.paper .kop-text .sub-alamat{font-size:9.5pt;font-weight:400;text-transform:none;margin-top:4px}
+.paper .kop-spacer{width:80px;flex-shrink:0}
+
+.paper table{border-collapse:collapse;margin:4px 0 8px;width:100%}
+.paper td{padding:2px 4px;vertical-align:top}
+.paper .sg{display:flex;justify-content:space-between;margin-top:22px;text-align:center}
+.paper .sg>div{min-width:40%}
+.paper .pg{page-break-after:always;border-bottom:2px dashed #bbb;margin:28px 0}
+.hint{font-size:13px;color:var(--mut);margin:0 0 12px}
+
+.logo-picker-box{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;margin-top:10px;grid-column:1/-1}
+.logo-picker-flex{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.logo-preview-thumb{width:50px;height:60px;background:#fff;border:1px solid var(--line);border-radius:4px;padding:2px;display:flex;align-items:center;justify-content:center}
+.logo-preview-thumb svg,.logo-preview-thumb img{max-width:100%;max-height:100%;object-fit:contain}
+
+.cloud-status{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.cloud-status.active{background:var(--okbg);color:var(--ok)}
+.cloud-status.offline{background:var(--warnbg);color:var(--warn)}
+.cloud-status.loading{background:var(--line);color:var(--ink)}
+
+@media(max-width:760px){
+  .app{grid-template-columns:1fr}
+  aside{flex-direction:row;flex-wrap:wrap;align-items:center}
+  aside p{display:none}
+  aside h1{width:100%}
+  .paper{padding:20px}
+  .paper .kop-spacer{display:none}
+}
+@media print{
+  body{background:#fff}
+  aside,.top,.tabs,.hint,.noprint{display:none!important}
+  .app{display:block}
+  main{padding:0}
+  .paper{border:0;max-width:none;padding:0}
+  .paper .pg{border:0;margin:0}
+  .paper .kop-spacer{width:80px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+<h1>Berkas Nikah Desa</h1>
+<p>Model N1–N5 dan permohonan kehendak nikah</p>
+<button class="nav" data-v="dash">Dasbor</button>
+<button class="nav" data-v="form">Data baru</button>
+<button class="nav" data-v="print">Cetak berkas</button>
+<button class="nav" data-v="settings">Pengaturan Cloud API</button>
+</aside>
+<main id="main"></main>
+</div>
+
+<script>
+const KEY = 'na-desa-v1';
+const API_KEY = 'na-desa-api-url';
+let recs = [], cur = null, view = 'dash', doc = 'N1';
+let apiUrl = localStorage.getItem(API_KEY) || '';
+let syncStatus = 'idle'; // 'idle', 'syncing', 'success', 'error'
+
+try { recs = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e) { recs = []; }
+const saveLocal = () => { try { localStorage.setItem(KEY, JSON.stringify(recs)); } catch(e){} };
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function callApi(action, payload = {}) {
+  if (!apiUrl) return null;
+  syncStatus = 'syncing';
+  updateCloudBadge();
+  try {
+    payload.action = action;
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    syncStatus = 'success';
+    updateCloudBadge();
+    return json;
+  } catch (err) {
+    console.error('API Error:', err);
+    syncStatus = 'error';
+    updateCloudBadge();
+    return null;
+  }
+}
+
+async function fetchFromCloud() {
+  if (!apiUrl) return;
+  const res = await callApi('getAll');
+  if (res && res.status === 'success' && Array.isArray(res.data)) {
+    recs = res.data;
+    saveLocal();
+    if (view === 'dash') dash();
+  }
+}
+
+async function saveRecordToCloud(record) {
+  saveLocal();
+  if (!apiUrl) return;
+  await callApi('save', { record });
+}
+
+async function deleteRecordFromCloud(id) {
+  saveLocal();
+  if (!apiUrl) return;
+  await callApi('delete', { id });
+}
+
+function updateCloudBadge() {
+  const badge = $('#cloud_badge');
+  if (!badge) return;
+  if (!apiUrl) {
+    badge.className = 'cloud-status offline';
+    badge.innerHTML = 'Mode Lokal (Tanpa Cloud)';
+  } else if (syncStatus === 'syncing') {
+    badge.className = 'cloud-status loading';
+    badge.innerHTML = 'Menyinkronkan...';
+  } else if (syncStatus === 'error') {
+    badge.className = 'cloud-status offline';
+    badge.innerHTML = 'Gagal Sinkronisasi Cloud';
+  } else {
+    badge.className = 'cloud-status active';
+    badge.innerHTML = 'Tersambung ke Google Sheets';
+  }
+}
+
+const SAROLANGUN_LOGO_SVG = `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+  <path d="M 60 10 L 140 10 L 190 50 L 190 140 L 100 230 L 10 140 L 10 50 Z" fill="#e11d23" stroke="#b01015" stroke-width="2"/>
+  <path d="M 63 15 L 137 15 L 183 52 L 183 137 L 100 223 L 17 137 L 17 52 Z" fill="#20a5ec"/>
+  <path d="M 17 120 L 50 90 L 80 115 L 120 85 L 150 110 L 183 95 L 183 137 L 100 223 L 17 137 Z" fill="#5cb82a"/>
+  
+  <rect x="25" y="25" width="150" height="20" rx="3" fill="#ffffff" stroke="#333" stroke-width="0.5"/>
+  <text x="100" y="39" font-family="'Arial Black', sans-serif" font-weight="900" font-size="10.5" text-anchor="middle" fill="#000000">KABUPATEN SAROLANGUN</text>
+  
+  <g fill="#ffffff" stroke="#555" stroke-width="0.8">
+    <path d="M 85 70 C 85 55 100 48 100 48 C 100 48 115 55 115 70 Z" fill="#ffffff"/>
+    <path d="M 100 48 L 100 42 M 98 43 Q 100 40 102 43" stroke="#e0a526" stroke-width="1.5" fill="none"/>
+    <rect x="80" y="70" width="40" height="8" rx="1"/>
+    <rect x="75" y="78" width="50" height="10" rx="1"/>
+    <path d="M 70 88 L 130 88 L 125 96 L 75 96 Z" fill="#eef2f5"/>
+  </g>
+  
+  <path d="M 65 118 L 73 102 L 100 112 L 127 102 L 135 118 L 125 120 L 100 114 L 75 120 Z" fill="#1e1e1e" stroke="#000" stroke-width="0.8"/>
+  <rect x="76" y="120" width="48" height="26" fill="#f8a5a5" stroke="#333" stroke-width="0.8"/>
+  <rect x="94" y="126" width="12" height="20" fill="#ffffff" stroke="#333" stroke-width="0.8"/>
+  <line x1="100" y1="126" x2="100" y2="146" stroke="#333" stroke-width="0.5"/>
+  <rect x="81" y="126" width="7" height="8" fill="#333"/>
+  <rect x="112" y="126" width="7" height="8" fill="#333"/>
+  <path d="M 88 146 L 112 146 L 116 160 L 84 160 Z" fill="#e0e0e0" stroke="#666" stroke-width="0.5"/>
+  <line x1="87" y1="149" x2="113" y2="149" stroke="#666" stroke-width="0.5"/>
+  <line x1="86" y1="152" x2="114" y2="152" stroke="#666" stroke-width="0.5"/>
+  <line x1="85" y1="155" x2="115" y2="155" stroke="#666" stroke-width="0.5"/>
+  
+  <path d="M 100 132 L 98 145 L 100 162 L 102 145 Z" fill="#e0a526" stroke="#8a6300" stroke-width="0.8"/>
+  <circle cx="100" cy="142" r="3" fill="#e0a526"/>
+
+  <g fill="#ffffff" stroke="#333" stroke-width="0.5">
+    <path d="M 32 152 Q 50 120 72 105" fill="none" stroke="#2e5a1c" stroke-width="2"/>
+    <circle cx="33" cy="150" r="5"/>
+    <circle cx="37" cy="138" r="5"/>
+    <circle cx="43" cy="127" r="5"/>
+    <circle cx="51" cy="118" r="5"/>
+    <circle cx="60" cy="111" r="5"/>
+    <circle cx="70" cy="106" r="4.5"/>
+  </g>
+
+  <g fill="#f8c300" stroke="#b58700" stroke-width="0.5">
+    <path d="M 168 152 Q 150 120 128 105" fill="none" stroke="#2e5a1c" stroke-width="2"/>
+    <ellipse cx="167" cy="149" rx="4" ry="6" transform="rotate(-20 167 149)"/>
+    <ellipse cx="162" cy="138" rx="4" ry="6" transform="rotate(-25 162 138)"/>
+    <ellipse cx="156" cy="127" rx="4" ry="6" transform="rotate(-30 156 127)"/>
+    <ellipse cx="148" cy="118" rx="4" ry="6" transform="rotate(-35 148 118)"/>
+    <ellipse cx="139" cy="111" rx="4" ry="6" transform="rotate(-40 139 111)"/>
+    <ellipse cx="129" cy="106" rx="3.5" ry="5" transform="rotate(-45 129 106)"/>
+  </g>
+
+  <path d="M 28 178 Q 100 205 172 178 L 163 166 Q 100 190 37 166 Z" fill="#fadb14" stroke="#c49a00" stroke-width="0.8"/>
+  <path d="M 28 178 L 18 170 L 25 162 L 37 166 Z" fill="#d4ad00"/>
+  <path d="M 172 178 L 182 170 L 175 162 L 163 166 Z" fill="#d4ad00"/>
+  <path id="ribbonTextPath" d="M 33 178 Q 100 202 167 178" fill="none"/>
+  <text font-family="'Arial', sans-serif" font-weight="bold" font-size="8.5" fill="#000000" text-anchor="middle">
+    <textPath href="#ribbonTextPath" startOffset="50%">SEPUCUK ADAT SERUMPUN PSEKO</textPath>
+  </text>
+</svg>`;
+
+const PF=[['nama','Nama lengkap & alias'],['bin','Bin / Binti'],['nik','NIK'],['tmp','Tempat lahir'],['tgl','Tanggal lahir','date'],['wn','Kewarganegaraan'],['agama','Agama'],['kerja','Pekerjaan'],['alamat','Alamat']];
+const GR=[['p','Calon suami'],['w','Calon istri'],['pa','Ayah calon suami'],['pi','Ibu calon suami'],['wa','Ayah calon istri'],['wi','Ibu calon istri']];
+const META=[['desa','Desa/Kelurahan'],['kec','Kecamatan'],['kab','Kabupaten/Kota'],['alamat_kantor','Alamat Kantor Desa/Kel (untuk Kop)'],['kades','Nama Kepala Desa/Lurah'],['nomor','Nomor surat'],['kota','Tempat surat dibuat'],['tglsurat','Tanggal surat','date'],['kua','KUA Kecamatan'],['akadTgl','Tanggal akad','date'],['akadJam','Pukul akad'],['akadTempat','Tempat akad'],['mahar','Mahar']];
+
+const fmt=s=>{if(!s)return'..............';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})};
+const D=(d,k,def)=>esc(d[k]||def||'.....................');
+const T=(d,p)=>`${D(d,p+'_tmp')}, ${fmt(d[p+'_tgl'])}`;
+const age=(d,p)=>{const t=d[p+'_tgl'];if(!t)return null;const b=new Date(t),n=d.akadTgl?new Date(d.akadTgl):new Date();let a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a};
+const nm=r=>(r.data.p_nama||'(belum diisi)')+' & '+(r.data.w_nama||'(belum diisi)');
+const done=r=>{const ks=GR.flatMap(g=>PF.map(f=>g[0]+'_'+f[0])).concat(META.map(m=>m[0]));return Math.round(ks.filter(k=>r.data[k]).length/ks.length*100)};
+const prevSpouse=(d,p)=>{const st=d[p+'_st']||(p==='p'?'Jejaka':'Perawan');if(st==='Jejaka'||st==='Perawan')return d[p+'_prev']||'-';return D(d,p+'_prev')};
+
+function getLogoHtml(d){
+  if(d.logoCustom) {
+    return `<img src="${esc(d.logoCustom)}" alt="Logo Kop" onerror="this.outerHTML=SAROLANGUN_LOGO_SVG">`;
+  }
+  return SAROLANGUN_LOGO_SVG;
+}
+
+function tags(r){let h='';for(const[p,l]of[['p','Suami'],['w','Istri']]){const a=age(r.data,p);if(a===null)continue;if(a<19)h+=`<span class="tag k">${l} ${a} th: butuh dispensasi PA</span>`;else if(a<21)h+=`<span class="tag w">${l} ${a} th: butuh izin ortu (N5)</span>`}return h||'<span class="tag g">Usia memenuhi</span>'}
+
+function dash(){
+const m=new Date().getMonth(),y=new Date().getFullYear();
+const bln=recs.filter(r=>{const d=new Date(r.id);return d.getMonth()===m&&d.getFullYear()===y}).length;
+let n5=0,dsp=0;recs.forEach(r=>{['p','w'].forEach(p=>{const a=age(r.data,p);if(a!==null&&a<19)dsp++;else if(a!==null&&a<21)n5++})});
+
+$('#main').innerHTML=`<div class="top">
+  <h2>Dasbor</h2>
+  <div>
+    <span id="cloud_badge" class="cloud-status"></span>
+    <button class="b o s" id="btn_sync">Sinkronkan</button>
+    <button class="b" id="nw">Buat berkas baru</button>
+  </div>
+</div>
+<div class="stats">
+  <div class="st"><b>${recs.length}</b><span>Seluruh berkas</span></div>
+  <div class="st"><b>${bln}</b><span>Dibuat bulan ini</span></div>
+  <div class="st"><b>${n5}</b><span>Calon butuh izin orang tua</span></div>
+  <div class="st"><b>${dsp}</b><span>Calon butuh dispensasi kawin</span></div>
+</div>
+<div class="panel">
+  <h3>Daftar berkas</h3>
+  ${recs.length?`<div class="tw"><table class="l"><tr><th>Pasangan</th><th>Akad</th><th>Kelengkapan</th><th>Catatan usia</th><th></th></tr>${recs.map(r=>`<tr><td><b>${esc(nm(r))}</b></td><td>${r.data.akadTgl?fmt(r.data.akadTgl):'-'}</td><td>${done(r)}%</td><td>${tags(r)}</td><td style="white-space:nowrap"><button class="b s" data-pr="${r.id}">Cetak</button> <button class="b o s" data-ed="${r.id}">Ubah</button> <button class="b d s" data-del="${r.id}">Hapus</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Belum ada berkas. Tekan "Buat berkas baru" untuk mengisi data calon pengantin.</div>'}
+</div>
+<p class="hint">Data tersimpan di ${apiUrl ? 'Google Sheets Cloud & ' : ''}peramban perangkat ini. Cocokkan hasil cetak dengan blanko resmi KUA sebelum diserahkan.</p>`;
+
+updateCloudBadge();
+$('#nw').onclick=()=>{cur={id:Date.now(),data:{wn_default:1,kab:'Sarolangun',p_st:'Jejaka',w_st:'Perawan'}};setV('form')};
+$('#btn_sync').onclick=()=>fetchFromCloud();
+document.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>{cur=recs.find(r=>r.id==b.dataset.pr);setV('print')});
+document.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>{cur=recs.find(r=>r.id==b.dataset.ed);setV('form')});
+document.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
+  if(confirm('Hapus berkas ini?')){
+    const delId = b.dataset.del;
+    recs=recs.filter(r=>r.id!=delId);
+    await deleteRecordFromCloud(delId);
+    dash();
+  }
+});
+}
+
+function inp(k,l,t,v){return `<label>${l}<input data-k="${k}" type="${t||'text'}" value="${esc(v||'')}"></label>`}
+function form(){
+if(!cur)cur={id:Date.now(),data:{}};
+const d=cur.data;
+if(!d.kab)d.kab='Sarolangun';
+if(!d.p_st)d.p_st='Jejaka';
+if(!d.w_st)d.w_st='Perawan';
+if(d.wn_default){delete d.wn_default;GR.forEach(g=>{d[g[0]+'_wn']='Indonesia';d[g[0]+'_agama']='Islam'})}
+const st=(p,o)=>`<label>Status perkawinan<select data-k="${p}_st">${o.map(x=>`<option value="${esc(x)}"${(d[p+'_st']||(p==='p'?'Jejaka':'Perawan'))===x?' selected':''}>${x}</option>`).join('')}</select></label>`;
+
+$('#main').innerHTML=`<div class="top"><h2>Data calon pengantin</h2><div><button class="b o" id="cx">Batal</button> <button class="b" id="sv">Simpan dan cetak</button></div></div>
+${GR.map(g=>`<div class="panel"><h3>${g[1]}</h3><div class="grid">${PF.filter(f=>!(g[0].length>1&&0)).map(f=>inp(g[0]+'_'+f[0],f[1],f[2],d[g[0]+'_'+f[0]])).join('')}${g[0]==='p'?st('p',['Jejaka','Duda cerai','Duda mati']):g[0]==='w'?st('w',['Perawan','Janda cerai','Janda mati']):''}${g[0]==='p'||g[0]==='w'?inp(g[0]+'_prev',g[0]==='p'?'Nama istri terdahulu (jika ada)':'Nama suami terdahulu (jika ada)','text',d[g[0]+'_prev']):''}</div></div>`).join('')}
+<div class="panel">
+  <h3>Data desa dan rencana akad</h3>
+  <div class="grid">
+    ${META.map(f=>inp(f[0],f[1],f[2],d[f[0]])).join('')}
+    <div class="logo-picker-box">
+      <label>Logo Kop Surat Desa/Kabupaten</label>
+      <div class="logo-picker-flex">
+        <div class="logo-preview-thumb" id="logo_thumb">${getLogoHtml(d)}</div>
+        <div>
+          <input type="file" id="logo_file" accept="image/*" style="font-size:12px;margin-top:0;">
+          <p style="margin:4px 0 0;font-size:11px;color:var(--mut);">Gunakan gambar berpiksel jernih. Secara bawaan menggunakan Logo Kabupaten Sarolangun.</p>
+        </div>
+        ${d.logoCustom ? `<button class="b d s" type="button" id="reset_logo">Gunakan Logo Default Sarolangun</button>` : ''}
+      </div>
+    </div>
+  </div>
+</div>`;
+
+document.querySelectorAll('[data-k]').forEach(e=>{
+  const update=()=>{d[e.dataset.k]=e.value};
+  e.oninput=update;
+  e.onchange=update;
+});
+$('#cx').onclick=()=>setV('dash');
+$('#sv').onclick=async()=>{
+  const idx = recs.findIndex(r=>r.id===cur.id);
+  if(idx > -1) recs[idx] = cur;
+  else recs.unshift(cur);
+  await saveRecordToCloud(cur);
+  setV('print');
+};
+
+const logoFile = $('#logo_file');
+if(logoFile) {
+  logoFile.onchange = e => {
+    const file = e.target.files[0];
+    if(file) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        d.logoCustom = ev.target.result;
+        $('#logo_thumb').innerHTML = `<img src="${esc(d.logoCustom)}" alt="Logo">`;
+        form();
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+}
+const resetLogoBtn = $('#reset_logo');
+if(resetLogoBtn) {
+  resetLogoBtn.onclick = () => {
+    delete d.logoCustom;
+    form();
+  };
+}
+}
+
+function settingsView() {
+  $('#main').innerHTML = `<div class="top"><h2>Pengaturan Cloud API</h2></div>
+  <div class="panel">
+    <h3>Penyematan Google Apps Script API</h3>
+    <p style="font-size:13px;color:var(--mut);margin-bottom:14px;">Masukkan Web App URL dari Google Apps Script untuk menyinkronkan data secara otomatis ke Google Sheets.</p>
+    <div style="margin-bottom:14px;">
+      <label>Google Apps Script Web App URL
+        <input type="url" id="api_url_input" placeholder="https://script.google.com/macros/s/AKfycbxBp6fG5qWKb4Vu4RhdkJcqHzFbaeO1Axd3PAx1-8wYVg8sjzG1YW-oVT7W3TYPNo1z/exec" value="${esc(apiUrl)}">
+      </label>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="b" id="save_api">Simpan & Hubungkan</button>
+      <button class="b o" id="test_api">Uji Koneksi</button>
+      <span id="api_test_res" style="font-size:13px;"></span>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Petunjuk Pemasangan Backend</h3>
+    <ol style="font-size:13px;line-height:1.7;padding-left:20px;color:var(--ink);">
+      <li>Buka Google Sheets baru dan pilih menu <b>Ekstensi &gt; Apps Script</b>.</li>
+      <li>Salin seluruh kode dari file <code>Code.gs</code> ke dalam editor Apps Script.</li>
+      <li>Jalankan fungsi <code>setupDatabase</code> satu kali.</li>
+      <li>Klik <b>Terapkan (Deploy) &gt; Terapkan sebagai Aplikasi Web (New deployment)</b>.</li>
+      <li>Atur <i>Jalankan Sebagai</i>: <b>Saya (Me)</b>.</li>
+      <li>Atur <i>Siapa yang memiliki akses</i>: <b>Siapa saja (Anyone)</b>.</li>
+      <li>Salin URL Aplikasi Web yang dihasilkan dan tempelkan pada kolom di atas.</li>
+    </ol>
+  </div>`;
+
+  $('#save_api').onclick = async () => {
+    apiUrl = $('#api_url_input').value.trim();
+    localStorage.setItem(API_KEY, apiUrl);
+    alert('URL API Cloud berhasil disimpan!');
+    await fetchFromCloud();
+    setV('dash');
+  };
+
+  $('#test_api').onclick = async () => {
+    const testUrl = $('#api_url_input').value.trim();
+    const resEl = $('#api_test_res');
+    if(!testUrl) {
+      resEl.style.color = 'var(--bad)';
+      resEl.innerText = 'Silakan isi URL terlebih dahulu.';
+      return;
+    }
+    resEl.style.color = 'var(--mut)';
+    resEl.innerText = 'Mencoba menghubungkan...';
+    try {
+      const res = await fetch(testUrl + '?action=getAll');
+      const json = await res.json();
+      if(json && json.status === 'success') {
+        resEl.style.color = 'var(--ok)';
+        resEl.innerText = '✓ Berhasil terhubung ke Google Sheets!';
+      } else {
+        resEl.style.color = 'var(--bad)';
+        resEl.innerText = 'Respon tidak sesuai: ' + JSON.stringify(json);
+      }
+    } catch(e) {
+      resEl.style.color = 'var(--bad)';
+      resEl.innerText = 'Gagal terhubung: ' + e.message;
+    }
+  };
+}
+
+const PR=(d,p,bin,extra)=>`<table>${[['Nama lengkap dan alias',D(d,p+'_nama')],[bin,D(d,p+'_bin')],['NIK',D(d,p+'_nik')],['Tempat/tanggal lahir',T(d,p)],['Kewarganegaraan',D(d,p+'_wn')],['Agama',D(d,p+'_agama')],['Pekerjaan',D(d,p+'_kerja')],['Alamat',D(d,p+'_alamat')]].concat(extra||[]).map(r=>`<tr><td style="width:32%">${r[0]}</td><td style="width:3%">:</td><td>${r[1]}</td></tr>`).join('')}</table>`;
+
+const kop = d => `
+<div class="kop">
+  <div class="kop-logo">${getLogoHtml(d)}</div>
+  <div class="kop-text">
+    PEMERINTAH KABUPATEN ${D(d,'kab').toUpperCase()}<br>
+    KECAMATAN ${D(d,'kec').toUpperCase()}<br>
+    DESA/KELURAHAN ${D(d,'desa').toUpperCase()}
+    ${d.alamat_kantor ? `<div class="sub-alamat">${esc(d.alamat_kantor)}</div>` : ''}
+  </div>
+  <div class="kop-spacer"></div>
+</div>`;
+
+const ttd=d=>`<div class="sg"><div></div><div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>Kepala Desa/Lurah<br><br><br><br><u>${D(d,'kades')}</u></div></div>`;
+const head=(d,t)=>`${kop(d)}<h4>${t}</h4><div class="no">Nomor: ${D(d,'nomor')}</div>`;
+const sd=(d)=>`Yang bertanda tangan di bawah ini, Kepala Desa/Lurah ${D(d,'desa')} Kecamatan ${D(d,'kec')} Kabupaten/Kota ${D(d,'kab')}, menerangkan dengan sesungguhnya bahwa:`;
+const side=[['p','w','pa','pi','Bin','Binti'],['w','p','wa','wi','Binti','Bin']];
+
+const DOCS={
+N1:d=>head(d,'MODEL N1: SURAT KETERANGAN UNTUK NIKAH')+sd(d)+`<p style="margin-top:10px"><b>A. Calon Pengantin Pria</b></p>`+PR(d,'p','Bin',[['Status perkawinan',D(d,'p_st','Jejaka')],['Istri terdahulu',prevSpouse(d,'p')]])+`<p style="margin-top:10px"><b>B. Calon Pengantin Wanita</b></p>`+PR(d,'w','Binti',[['Status perkawinan',D(d,'w_st','Perawan')],['Suami terdahulu',prevSpouse(d,'w')]])+`<p>Benar bahwa nama-nama tersebut adalah penduduk desa/kelurahan kami dan sepanjang pengetahuan kami tidak terdapat halangan untuk melangsungkan pernikahan menurut hukum agama dan peraturan perundang-undangan.</p><p>Demikian surat keterangan ini dibuat dengan sebenarnya untuk digunakan sebagaimana mestinya.</p>`+ttd(d),
+N2:d=>side.map(s=>head(d,'MODEL N2: SURAT KETERANGAN ASAL-USUL')+sd(d)+PR(d,s[0],s[4])+`<p>Adalah benar anak dari perkawinan seorang pria <b>${D(d,s[2]+'_nama')}</b> dengan seorang wanita <b>${D(d,s[3]+'_nama')}</b>.</p><p>Demikian surat keterangan ini dibuat dengan mengingat sumpah jabatan dan untuk digunakan seperlunya.</p>`+ttd(d)).join('<div class="pg"></div>'),
+N3:d=>kop(d)+`<h4>MODEL N3: SURAT PERSETUJUAN CALON PENGANTIN</h4><div class="no">&nbsp;</div><p>Yang bertanda tangan di bawah ini:</p><p><b>Calon Suami</b></p>`+PR(d,'p','Bin')+`<p><b>Calon Istri</b></p>`+PR(d,'w','Binti')+`<p>Menyatakan dengan sesungguhnya bahwa atas dasar suka rela, dengan kesadaran sendiri, tanpa ada paksaan dari pihak mana pun, setuju untuk melangsungkan pernikahan.</p><p>Demikian surat persetujuan ini dibuat untuk digunakan seperlunya.</p><div class="sg"><div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>Calon Suami<br><br><br><br><u>${D(d,'p_nama')}</u></div><div><br>Calon Istri<br><br><br><br><u>${D(d,'w_nama')}</u></div></div>`,
+N4:d=>side.map(s=>head(d,'MODEL N4: SURAT KETERANGAN TENTANG ORANG TUA')+sd(d)+`<p><b>I. Ayah</b></p>`+PR(d,s[2],'Bin')+`<p><b>II. Ibu</b></p>`+PR(d,s[3],'Binti')+`<p>Adalah benar ayah dan ibu kandung dari <b>${D(d,s[0]+'_nama')}</b> ${s[4]} ${D(d,s[0]+'_bin')}, lahir di ${T(d,s[0])}, beralamat di ${D(d,s[0]+'_alamat')}, yang akan melangsungkan pernikahan dengan <b>${D(d,s[1]+'_nama')}</b> ${s[5]} ${D(d,s[1]+'_bin')}.</p><p>Demikian surat keterangan ini dibuat dengan sebenarnya untuk digunakan sebagaimana mestinya.</p>`+ttd(d)).join('<div class="pg"></div>'),
+N5:d=>side.map(s=>{const a=age(d,s[0]);return kop(d)+`<h4>MODEL N5: SURAT IZIN ORANG TUA</h4><div class="no">${a!==null?`(Calon pengantin berusia ${a} tahun)`:'&nbsp;'}</div><p>Yang bertanda tangan di bawah ini:</p><p><b>Ayah</b></p>`+PR(d,s[2],'Bin')+`<p><b>Ibu</b></p>`+PR(d,s[3],'Binti')+`<p>Adalah ayah dan ibu kandung dari calon pengantin ${s[0]==='p'?'pria':'wanita'}:</p>`+PR(d,s[0],s[4])+`<p>Dengan ini <b>memberikan izin</b> kepada anak kami tersebut untuk melangsungkan pernikahan dengan <b>${D(d,s[1]+'_nama')}</b> ${s[5]} ${D(d,s[1]+'_bin')}.</p><p>Demikian surat izin ini dibuat dengan penuh kesadaran dan tanpa paksaan.</p><div class="sg"><div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>Ayah<br><br><br><br><u>${D(d,s[2]+'_nama')}</u></div><div><br>Ibu<br><br><br><br><u>${D(d,s[3]+'_nama')}</u></div></div>`}).join('<div class="pg"></div>'),
+N7:d=>kop(d)+`<p style="text-align:right">${D(d,'kota')}, ${fmt(d.tglsurat)}</p><p>Perihal: <b>Pemberitahuan Kehendak Nikah</b></p><p>Kepada Yth.<br>Kepala KUA Kecamatan ${D(d,'kua')}<br>di tempat</p><p><i>Assalamu'alaikum Wr. Wb.</i></p><p>Dengan hormat, kami mengajukan permohonan agar pernikahan calon suami:</p>`+PR(d,'p','Bin')+`<p>dengan calon istri:</p>`+PR(d,'w','Binti')+`<p>dapat dilangsungkan pada:</p><table><tr><td style="width:32%">Hari/tanggal</td><td style="width:3%">:</td><td>${fmt(d.akadTgl)}</td></tr><tr><td>Pukul</td><td>:</td><td>${D(d,'akadJam')} WIB</td></tr><tr><td>Tempat</td><td>:</td><td>${D(d,'akadTempat')}</td></tr><tr><td>Mahar</td><td>:</td><td>${D(d,'mahar')}</td></tr></table><p>Bersama ini kami lampirkan surat-surat yang diperlukan. Demikian permohonan ini kami sampaikan, atas perhatian Bapak kami ucapkan terima kasih.</p><p><i>Wassalamu'alaikum Wr. Wb.</i></p><div class="sg"><div>Calon Suami<br><br><br><br><u>${D(d,'p_nama')}</u></div><div>Calon Istri<br><br><br><br><u>${D(d,'w_nama')}</u></div></div>`
+};
+const LBL={N1:'N1 Keterangan Nikah',N2:'N2 Asal-Usul',N3:'N3 Persetujuan',N4:'N4 Orang Tua',N5:'N5 Izin Orang Tua',N7:'Permohonan (N7)'};
+
+function prt(){
+if(!cur){$('#main').innerHTML='<div class="top"><h2>Cetak berkas</h2></div><div class="panel empty">Pilih berkas dari dasbor atau buat berkas baru lebih dulu.</div>';return}
+$('#main').innerHTML=`<div class="top"><h2>${esc(nm(cur))}</h2><div><button class="b o" onclick="form()">Ubah data</button> <button class="b" onclick="window.print()">Cetak halaman ini</button></div></div>
+<div class="tabs">${Object.keys(LBL).map(k=>`<button class="b" data-d="${k}" aria-pressed="${k===doc}">${LBL[k]}</button>`).join('')}</div>
+<p class="hint">${tags(cur)} Titik-titik berarti data belum diisi dan dapat ditulis tangan setelah dicetak.${doc==='N2'||doc==='N4'||doc==='N5'?' Berkas ini terdiri dari dua lembar: calon suami lalu calon istri.':''}</p>
+<div class="paper">${DOCS[doc](cur.data)}</div>`;
+document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{doc=b.dataset.d;prt()});
+}
+
+function setV(v){
+  view=v;
+  document.querySelectorAll('.nav').forEach(n=>n.setAttribute('aria-current',n.dataset.v===v));
+  if (v === 'settings') {
+    settingsView();
+  } else {
+    ({dash,form,print:prt})[v]();
+  }
+  window.scrollTo(0,0);
+}
+
+document.querySelectorAll('.nav').forEach(n=>n.onclick=()=>{
+  if(n.dataset.v==='form'&&!cur) {
+    cur={id:Date.now(),data:{wn_default:1,kab:'Sarolangun',p_st:'Jejaka',w_st:'Perawan'}};
+  }
+  setV(n.dataset.v);
+});
+
+// Inisialisasi awal
+if (apiUrl) fetchFromCloud();
+setV('dash');
+</script>
+</body>
+</html>
