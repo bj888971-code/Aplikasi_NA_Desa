@@ -127,32 +127,63 @@ async function callApi(action, payload = {}) {
   if (!apiUrl) return null;
   syncStatus = 'syncing';
   updateCloudBadge();
+  
+  payload.action = action;
+  const jsonString = JSON.stringify(payload);
+  const sep = apiUrl.includes('?') ? '&' : '?';
+  const reqUrl = apiUrl + sep + 'data=' + encodeURIComponent(jsonString);
+
   try {
-    payload.action = action;
-    const res = await fetch(apiUrl, {
+    const res = await fetch(reqUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
+      body: jsonString
     });
     const json = await res.json();
     syncStatus = (json && json.status === 'success') ? 'success' : 'error';
     updateCloudBadge();
     return json;
   } catch (err) {
-    console.error('API Error:', err);
-    syncStatus = 'error';
-    updateCloudBadge();
-    return null;
+    console.warn('POST callApi gagal, mencoba fallback GET:', err);
+    try {
+      const resGet = await fetch(reqUrl, { method: 'GET' });
+      const jsonGet = await resGet.json();
+      syncStatus = (jsonGet && jsonGet.status === 'success') ? 'success' : 'error';
+      updateCloudBadge();
+      return jsonGet;
+    } catch (getErr) {
+      console.error('API Error:', getErr);
+      syncStatus = 'error';
+      updateCloudBadge();
+      return null;
+    }
   }
 }
 
-async function fetchFromCloud() {
-  if (!apiUrl) return;
+async function fetchFromCloud(manual = false) {
+  if (!apiUrl) {
+    if (manual) {
+      alert('URL API Cloud belum dikonfigurasi.\n\nSilakan buka menu "Pengaturan Cloud API" untuk memasukkan Web App URL Google Apps Script Anda.');
+      setV('settings');
+    }
+    return;
+  }
+  
+  syncStatus = 'syncing';
+  updateCloudBadge();
+  
   const res = await callApi('getAll');
   if (res && res.status === 'success' && Array.isArray(res.data)) {
     recs = res.data;
     saveLocal();
     if (view === 'dash') dash();
+    if (manual) {
+      alert('✓ Sinkronisasi berhasil!\n' + recs.length + ' data berkas berhasil dimuat dari Google Sheets.');
+    }
+  } else {
+    if (manual) {
+      alert('❌ Gagal menyinkronkan data dari Google Sheets.\n\nPeriksa kembali Web App URL di Pengaturan Cloud API atau pastikan koneksi internet terhubung.');
+    }
   }
 }
 
@@ -173,7 +204,7 @@ function updateCloudBadge() {
   if (!badge) return;
   if (!apiUrl) {
     badge.className = 'cloud-status offline';
-    badge.innerHTML = 'Mode Lokal (Tanpa Cloud)';
+    badge.innerHTML = 'Mode Lokal (Belum Terhubung Cloud)';
   } else if (syncStatus === 'syncing') {
     badge.className = 'cloud-status loading';
     badge.innerHTML = 'Menyinkronkan...';
@@ -293,7 +324,7 @@ $('#main').innerHTML=`<div class="top">
 
 updateCloudBadge();
 $('#nw').onclick=()=>{cur={id:Date.now(),data:{wn_default:1,kab:'Sarolangun',p_st:'Jejaka',w_st:'Perawan'}};setV('form')};
-$('#btn_sync').onclick=()=>fetchFromCloud();
+$('#btn_sync').onclick=()=>fetchFromCloud(true);
 document.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>{cur=recs.find(r=>r.id==b.dataset.pr);setV('print')});
 document.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>{cur=recs.find(r=>r.id==b.dataset.ed);setV('form')});
 document.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
@@ -381,7 +412,7 @@ function settingsView() {
     <p style="font-size:13px;color:var(--mut);margin-bottom:14px;">Masukkan Web App URL dari Google Apps Script untuk menyinkronkan data secara otomatis ke Google Sheets.</p>
     <div style="margin-bottom:14px;">
       <label>Google Apps Script Web App URL
-        <input type="url" id="api_url_input" placeholder="https://script.google.com/macros/s/AKfycbzogfqYOcIvxydXXF_K2z1r-g8Roqr59xSYCba9UJRFzjs4-ivMIMnCESH1W288JJWE/exec" value="${esc(apiUrl)}">
+        <input type="url" id="api_url_input" placeholder="https://script.google.com/macros/s/AKfycbyyRpDZwx-ujtcDT9Sy2DR6HBAvC2LOm8BZHou_RuL1D3GwLkd4WVI9WoTOhqK5vuL2/exec" value="${esc(apiUrl)}">
       </label>
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
