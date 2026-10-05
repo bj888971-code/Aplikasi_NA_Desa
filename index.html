@@ -243,10 +243,10 @@ function form(){
   if(!d.w_st)d.w_st='Perawan';
   if(!d.kadesJabatan)d.kadesJabatan='Definitif';
   if(d.wn_default){delete d.wn_default;GR.forEach(g=>{d[g[0]+'_wn']='Indonesia';d[g[0]+'_agama']='Islam'})}
-  const st=(p,o)=>`<label>Status perkawinan<select data-k="${p}_st">${o.map(x=>`<option value="${esc(x)}"${d[p+'_st']===x?' selected':''}>${x}</option>`).join('')}</select></label>`;
+  const st=(p,o)=>`<label>Status perkawinan<select data-k="${p}_st" id="select_${p}_st">${o.map(x=>`<option value="${esc(x)}"${d[p+'_st']===x?' selected':''}>${x}</option>`).join('')}</select></label>`;
 
   $('#main').innerHTML=`<div class="top"><h2>Data pengantin & keluarga</h2><div><button class="b o" id="cx">Batal</button> <button class="b" id="sv">Simpan</button></div></div>
-  ${GR.map(g=>`<div class="panel"><h3>${g[1]}</h3><div class="grid">${PF.map(f=>inp(g[0]+'_'+f[0],f[1],f[2],d[g[0]+'_'+f[0]])).join('')}${g[0]==='pm'||g[0]==='wm'?inp(g[0]+'_tgl_mati','Tanggal Meninggal','date',d[g[0]+'_tgl_mati'])+inp(g[0]+'_tmp_mati','Tempat Meninggal','text',d[g[0]+'_tmp_mati']):''}${g[0]==='p'?st('p',['Jejaka','Duda','Beristri'])+inp('p_istrike','Istri ke- (Jika status Beristri)','number',d['p_istrike']):g[0]==='w'?st('w',['Perawan','Janda']):''}</div></div>`).join('')}
+  ${GR.map(g=>`<div class="panel"><h3>${g[1]}</h3><div class="grid">${PF.map(f=>inp(g[0]+'_'+f[0],f[1],f[2],d[g[0]+'_'+f[0]])).join('')}${g[0]==='pm'||g[0]==='wm'?inp(g[0]+'_tgl_mati','Tanggal Meninggal','date',d[g[0]+'_tgl_mati'])+inp(g[0]+'_tmp_mati','Tempat Meninggal','text',d[g[0]+'_tmp_mati']):''}${g[0]==='p'?st('p',['Jejaka','Duda','Beristri'])+`<div id="wrapper_p_istrike" style="${d['p_st']==='Beristri'?'':'display:none;'}">${inp('p_istrike','Istri ke- (Jika status Beristri)','number',d['p_istrike'])}</div>`:g[0]==='w'?st('w',['Perawan','Janda']):''}</div></div>`).join('')}
   <div class="panel"><h3>Data administrasi</h3><div class="grid">
     ${inp('desa','Desa/Kelurahan','text',d['desa'])}
     ${inp('kec','Kecamatan','text',d['kec'])}
@@ -263,6 +263,17 @@ function form(){
     ${inp('akadTempat','Tempat akad','text',d['akadTempat'])}
     ${inp('isbatTgl','Tgl Penetapan PA (Utk N3)','date',d['isbatTgl'])}
   </div></div>`;
+
+  const stSelect = $('#select_p_st');
+  if (stSelect) {
+    stSelect.onchange = (e) => {
+      d['p_st'] = e.target.value;
+      const wrap = $('#wrapper_p_istrike');
+      if (wrap) {
+        wrap.style.display = (e.target.value === 'Beristri') ? 'block' : 'none';
+      }
+    };
+  }
 
   document.querySelectorAll('[data-k]').forEach(e=>{
     const update=()=>{d[e.dataset.k]=e.value};
@@ -308,7 +319,21 @@ const PR_PDF = (d, p, bLabel, numStart=1) => `
   <tr><td>${numStart+7}.</td><td>Alamat</td><td>:</td><td>${D(d,p+'_alamat')}</td></tr>
 </table>`;
 
-const PR_N1 = (d, p, jk) => `
+const PR_N1 = (d, p, jk) => {
+  let statusSuamiStr = "........................................";
+  const stVal = d[p+'_st'];
+  if (jk === 'Laki-laki') {
+    if (stVal === 'Jejaka') {
+      statusSuamiStr = "<b>Jejaka</b>";
+    } else if (stVal === 'Duda') {
+      statusSuamiStr = "<b>Duda</b>";
+    } else if (stVal === 'Beristri') {
+      const istriKeVal = d['p_istrike'] ? `Istri ke-${esc(d['p_istrike'])}` : 'Istri ke-......';
+      statusSuamiStr = `<b>Beristri (${istriKeVal})</b>`;
+    }
+  }
+
+  return `
 <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
   <tr><td style="width:25px;">1.</td><td style="width:250px;">Nama</td><td style="width:15px;">:</td><td>${D(d,p+'_nama')}</td></tr>
   <tr><td>2.</td><td>Nomor Induk Kependudukan (NIK)</td><td>:</td><td>${D(d,p+'_nik')}</td></tr>
@@ -321,12 +346,12 @@ const PR_N1 = (d, p, jk) => `
   <tr><td>9.</td><td>Status pernikahan</td><td>:</td><td></td></tr>
   <tr><td></td><td colspan="3">
     <table style="width:100%; margin-top:2px;">
-      <tr><td style="width:120px; vertical-align:top;">a. Laki-laki</td><td>: Jejaka, Duda, atau beristri ke ${jk==='Laki-laki'&&d[p+'_st']==='Beristri'?(d[p+'_istrike']||'......'):'......'}</td></tr>
-      <tr><td style="vertical-align:top;">b. Perempuan</td><td>: Perawan, Janda</td></tr>
+      <tr><td style="width:120px; vertical-align:top;">a. Laki-laki</td><td>: ${statusSuamiStr}</td></tr>
+      <tr><td style="vertical-align:top;">b. Perempuan</td><td>: ${jk==='Perempuan' && stVal?`<b>${stVal}</b>`:'Perawan, Janda'}</td></tr>
     </table>
-    <div style="margin-top:4px; font-size:11pt;"><em>(Tercatat di sistem: ${D(d,p+'_st')})</em></div>
   </td></tr>
 </table>`;
+};
 
 const Parent_N1 = (d, p) => `
 <table style="width:100%; margin-bottom:5px;">
