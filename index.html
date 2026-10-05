@@ -51,33 +51,22 @@ input,select{width:100%;margin-top:3px;padding:8px 10px;border:1px solid var(--l
 .tabs .b{padding:6px 12px}
 .tabs .b[aria-pressed=false]{background:transparent;color:var(--pri)}
 
-.paper{background:#fff;color:#000;max-width:800px;margin:0 auto;padding:40px 48px;font:12pt/1.45 "Times New Roman",Times,serif;border:1px solid var(--line);overflow-x:auto}
-.paper h4{text-align:center;margin:14px 0 2px;font-size:13pt;text-decoration:underline}
-.paper .no{text-align:center;margin-bottom:14px}
+.paper{background:#fff;color:#000;max-width:800px;margin:0 auto;padding:40px 48px;font:12pt/1.5 "Times New Roman",Times,serif;border:1px solid var(--line);overflow-x:auto}
+.paper p { margin: 0 0 10px 0; }
+.paper h4{text-align:center;margin:14px 0 2px;font-size:13pt;}
+.model-box { float: right; border: 1.5px solid #000; padding: 4px 10px; font-weight: bold; font-size: 11pt; margin-bottom:15px; }
+.clear { clear: both; }
 
-.paper .kop{display:flex;align-items:center;justify-content:space-between;border-bottom:3px double #000;padding-bottom:10px;margin-bottom:14px;min-height:90px}
-.paper .kop-logo{width:80px;height:90px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.paper .kop-logo svg, .paper .kop-logo img{max-width:100%;max-height:100%;object-fit:contain}
-.paper .kop-text{flex:1;text-align:center;font-weight:700;font-size:13pt;line-height:1.3;padding:0 12px;text-transform:uppercase}
-.paper .kop-text .sub-alamat{font-size:9.5pt;font-weight:400;text-transform:none;margin-top:4px}
-.paper .kop-spacer{width:80px;flex-shrink:0}
-
-.paper table{border-collapse:collapse;margin:4px 0 8px;width:100%}
-.paper td{padding:2px 4px;vertical-align:top}
+.paper table { border-collapse: collapse; margin-bottom: 10px; width: 100%; }
+.paper td { padding: 2px; vertical-align: top; }
 .paper .sg{display:flex;justify-content:space-between;margin-top:22px;text-align:center}
 .paper .sg>div{min-width:40%}
 .paper .pg{page-break-after:always;border-bottom:2px dashed #bbb;margin:28px 0}
 .hint{font-size:13px;color:var(--mut);margin:0 0 12px}
 
-.logo-picker-box{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;margin-top:10px;grid-column:1/-1}
-.logo-picker-flex{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px}
-.logo-preview-thumb{width:50px;height:60px;background:#fff;border:1px solid var(--line);border-radius:4px;padding:2px;display:flex;align-items:center;justify-content:center}
-.logo-preview-thumb svg,.logo-preview-thumb img{max-width:100%;max-height:100%;object-fit:contain}
-
-.cloud-status{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:600}
-.cloud-status.active{background:var(--okbg);color:var(--ok)}
-.cloud-status.offline{background:var(--warnbg);color:var(--warn)}
-.cloud-status.loading{background:var(--line);color:var(--ink)}
+#modal_overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding: 20px; }
+#modal_box { background:var(--panel); padding:24px; border-radius:8px; width:100%; max-width:400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+#modal_msg { margin-top:0; font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
 
 @media(max-width:760px){
   .app{grid-template-columns:1fr}
@@ -85,16 +74,14 @@ input,select{width:100%;margin-top:3px;padding:8px 10px;border:1px solid var(--l
   aside p{display:none}
   aside h1{width:100%}
   .paper{padding:20px}
-  .paper .kop-spacer{display:none}
 }
 @media print{
   body{background:#fff}
   aside,.top,.tabs,.hint,.noprint{display:none!important}
   .app{display:block}
   main{padding:0}
-  .paper{border:0;max-width:none;padding:0}
+  .paper{border:0;max-width:none;padding:0; font-size: 12pt;}
   .paper .pg{border:0;margin:0}
-  .paper .kop-spacer{width:80px}
 }
 </style>
 </head>
@@ -102,59 +89,77 @@ input,select{width:100%;margin-top:3px;padding:8px 10px;border:1px solid var(--l
 <div class="app">
 <aside>
 <h1>Berkas Nikah Desa</h1>
-<p>Model N1–N5 dan permohonan kehendak nikah</p>
+<p>Dokumen N1-N6 Format Baru</p>
 <button class="nav" data-v="dash">Dasbor</button>
 <button class="nav" data-v="form">Data baru</button>
 <button class="nav" data-v="print">Cetak berkas</button>
-<button class="nav" data-v="settings">Pengaturan Cloud API</button>
+<button class="nav" data-v="settings">Pengaturan Cloud</button>
 </aside>
 <main id="main"></main>
 </div>
 
+<div id="modal_overlay">
+  <div id="modal_box">
+    <p id="modal_msg"></p>
+    <div style="text-align:right; margin-top:24px;">
+      <button class="b o" id="modal_no" style="display:none; margin-right:8px;">Batal</button>
+      <button class="b" id="modal_ok">OK</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const KEY = 'na-desa-v1';
+const KEY = 'na-desa-v2';
 const API_KEY = 'na-desa-api-url';
 let recs = [], cur = null, view = 'dash', doc = 'N1';
 let apiUrl = localStorage.getItem(API_KEY) || '';
-let syncStatus = 'idle'; // 'idle', 'syncing', 'success', 'error'
+let syncStatus = 'idle';
 
 try { recs = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e) { recs = []; }
 const saveLocal = () => { try { localStorage.setItem(KEY, JSON.stringify(recs)); } catch(e){} };
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+function customAlert(msg) {
+  return new Promise(res => {
+    $('#modal_msg').innerText = msg;
+    $('#modal_no').style.display = 'none';
+    $('#modal_overlay').style.display = 'flex';
+    $('#modal_ok').onclick = () => { $('#modal_overlay').style.display = 'none'; res(true); };
+  });
+}
+
+function customConfirm(msg) {
+  return new Promise(res => {
+    $('#modal_msg').innerText = msg;
+    $('#modal_no').style.display = 'inline-block';
+    $('#modal_overlay').style.display = 'flex';
+    $('#modal_ok').onclick = () => { $('#modal_overlay').style.display = 'none'; res(true); };
+    $('#modal_no').onclick = () => { $('#modal_overlay').style.display = 'none'; res(false); };
+  });
+}
+
 async function callApi(action, payload = {}) {
   if (!apiUrl) return null;
   syncStatus = 'syncing';
-  updateCloudBadge();
-  
   payload.action = action;
   const jsonString = JSON.stringify(payload);
   const sep = apiUrl.includes('?') ? '&' : '?';
   const reqUrl = apiUrl + sep + 'data=' + encodeURIComponent(jsonString);
 
   try {
-    const res = await fetch(reqUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: jsonString
-    });
+    const res = await fetch(reqUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: jsonString });
     const json = await res.json();
     syncStatus = (json && json.status === 'success') ? 'success' : 'error';
-    updateCloudBadge();
     return json;
   } catch (err) {
-    console.warn('POST callApi gagal, mencoba fallback GET:', err);
     try {
       const resGet = await fetch(reqUrl, { method: 'GET' });
       const jsonGet = await resGet.json();
       syncStatus = (jsonGet && jsonGet.status === 'success') ? 'success' : 'error';
-      updateCloudBadge();
       return jsonGet;
     } catch (getErr) {
-      console.error('API Error:', getErr);
       syncStatus = 'error';
-      updateCloudBadge();
       return null;
     }
   }
@@ -163,370 +168,404 @@ async function callApi(action, payload = {}) {
 async function fetchFromCloud(manual = false) {
   if (!apiUrl) {
     if (manual) {
-      alert('URL API Cloud belum dikonfigurasi.\n\nSilakan buka menu "Pengaturan Cloud API" untuk memasukkan Web App URL Google Apps Script Anda.');
+      await customAlert('URL API Cloud belum dikonfigurasi.\n\nSilakan buka menu "Pengaturan Cloud" untuk memasukkan Web App URL.');
       setV('settings');
     }
     return;
   }
-  
   syncStatus = 'syncing';
-  updateCloudBadge();
-  
   const res = await callApi('getAll');
   if (res && res.status === 'success' && Array.isArray(res.data)) {
     recs = res.data;
     saveLocal();
     if (view === 'dash') dash();
-    if (manual) {
-      alert('✓ Sinkronisasi berhasil!\n' + recs.length + ' data berkas berhasil dimuat dari Google Sheets.');
-    }
+    if (manual) await customAlert('✓ Sinkronisasi berhasil!\n' + recs.length + ' data berkas berhasil dimuat.');
   } else {
-    if (manual) {
-      alert('❌ Gagal menyinkronkan data dari Google Sheets.\n\nPeriksa kembali Web App URL di Pengaturan Cloud API atau pastikan koneksi internet terhubung.');
-    }
+    if (manual) await customAlert('❌ Gagal menyinkronkan data.\nPeriksa kembali URL API atau koneksi internet.');
   }
 }
 
-async function saveRecordToCloud(record) {
-  saveLocal();
-  if (!apiUrl) return;
-  await callApi('save', { record });
-}
+async function saveRecordToCloud(record) { saveLocal(); if (apiUrl) await callApi('save', { record }); }
+async function deleteRecordFromCloud(id) { saveLocal(); if (apiUrl) await callApi('delete', { id }); }
 
-async function deleteRecordFromCloud(id) {
-  saveLocal();
-  if (!apiUrl) return;
-  await callApi('delete', { id });
-}
+const PF=[['nama','Nama lengkap dan alias'],['bin','Bin / Binti'],['nik','NIK'],['tmp','Tempat lahir'],['tgl','Tanggal lahir','date'],['wn','Kewarganegaraan'],['agama','Agama'],['kerja','Pekerjaan'],['alamat','Alamat']];
+const GR=[['p','Calon suami'],['w','Calon istri'],['pa','Ayah suami'],['pi','Ibu suami'],['wa','Ayah istri'],['wi','Ibu istri'],['pm','Mantan Istri Suami (Utk N6)'],['wm','Mantan Suami Istri (Utk N6)']];
+const META=[['desa','Desa/Kelurahan'],['kec','Kecamatan'],['kab','Kabupaten/Kota'],['kades','Nama Kepala Desa/Lurah'],['kadesNip','NIP Kepala Desa/Lurah'],['kadesJabatan','Jabatan Kepala Desa',['Definitif','Plt.','Pj.']],['nomor','Nomor surat'],['kota','Tempat surat dibuat (ttd)'],['tglsurat','Tanggal pembuatan surat','date'],['kua','KUA Kecamatan'],['akadTgl','Tanggal akad','date'],['akadJam','Pukul akad'],['akadTempat','Tempat akad'],['isbatTgl','Tgl Penetapan PA (Utk N3)','date']];
 
-function updateCloudBadge() {
-  const badge = $('#cloud_badge');
-  if (!badge) return;
-  if (!apiUrl) {
-    badge.className = 'cloud-status offline';
-    badge.innerHTML = 'Mode Lokal (Belum Terhubung Cloud)';
-  } else if (syncStatus === 'syncing') {
-    badge.className = 'cloud-status loading';
-    badge.innerHTML = 'Menyinkronkan...';
-  } else if (syncStatus === 'error') {
-    badge.className = 'cloud-status offline';
-    badge.innerHTML = 'Gagal Sinkronisasi Cloud';
-  } else {
-    badge.className = 'cloud-status active';
-    badge.innerHTML = 'Tersambung ke Google Sheets';
-  }
-}
-
-const SAROLANGUN_LOGO_SVG = `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-  <path d="M 60 10 L 140 10 L 190 50 L 190 140 L 100 230 L 10 140 L 10 50 Z" fill="#e11d23" stroke="#b01015" stroke-width="2"/>
-  <path d="M 63 15 L 137 15 L 183 52 L 183 137 L 100 223 L 17 137 L 17 52 Z" fill="#20a5ec"/>
-  <path d="M 17 120 L 50 90 L 80 115 L 120 85 L 150 110 L 183 95 L 183 137 L 100 223 L 17 137 Z" fill="#5cb82a"/>
-  
-  <rect x="25" y="25" width="150" height="20" rx="3" fill="#ffffff" stroke="#333" stroke-width="0.5"/>
-  <text x="100" y="39" font-family="'Arial Black', sans-serif" font-weight="900" font-size="10.5" text-anchor="middle" fill="#000000">KABUPATEN SAROLANGUN</text>
-  
-  <g fill="#ffffff" stroke="#555" stroke-width="0.8">
-    <path d="M 85 70 C 85 55 100 48 100 48 C 100 48 115 55 115 70 Z" fill="#ffffff"/>
-    <path d="M 100 48 L 100 42 M 98 43 Q 100 40 102 43" stroke="#e0a526" stroke-width="1.5" fill="none"/>
-    <rect x="80" y="70" width="40" height="8" rx="1"/>
-    <rect x="75" y="78" width="50" height="10" rx="1"/>
-    <path d="M 70 88 L 130 88 L 125 96 L 75 96 Z" fill="#eef2f5"/>
-  </g>
-  
-  <path d="M 65 118 L 73 102 L 100 112 L 127 102 L 135 118 L 125 120 L 100 114 L 75 120 Z" fill="#1e1e1e" stroke="#000" stroke-width="0.8"/>
-  <rect x="76" y="120" width="48" height="26" fill="#f8a5a5" stroke="#333" stroke-width="0.8"/>
-  <rect x="94" y="126" width="12" height="20" fill="#ffffff" stroke="#333" stroke-width="0.8"/>
-  <line x1="100" y1="126" x2="100" y2="146" stroke="#333" stroke-width="0.5"/>
-  <rect x="81" y="126" width="7" height="8" fill="#333"/>
-  <rect x="112" y="126" width="7" height="8" fill="#333"/>
-  <path d="M 88 146 L 112 146 L 116 160 L 84 160 Z" fill="#e0e0e0" stroke="#666" stroke-width="0.5"/>
-  <line x1="87" y1="149" x2="113" y2="149" stroke="#666" stroke-width="0.5"/>
-  <line x1="86" y1="152" x2="114" y2="152" stroke="#666" stroke-width="0.5"/>
-  <line x1="85" y1="155" x2="115" y2="155" stroke="#666" stroke-width="0.5"/>
-  
-  <path d="M 100 132 L 98 145 L 100 162 L 102 145 Z" fill="#e0a526" stroke="#8a6300" stroke-width="0.8"/>
-  <circle cx="100" cy="142" r="3" fill="#e0a526"/>
-
-  <g fill="#ffffff" stroke="#333" stroke-width="0.5">
-    <path d="M 32 152 Q 50 120 72 105" fill="none" stroke="#2e5a1c" stroke-width="2"/>
-    <circle cx="33" cy="150" r="5"/>
-    <circle cx="37" cy="138" r="5"/>
-    <circle cx="43" cy="127" r="5"/>
-    <circle cx="51" cy="118" r="5"/>
-    <circle cx="60" cy="111" r="5"/>
-    <circle cx="70" cy="106" r="4.5"/>
-  </g>
-
-  <g fill="#f8c300" stroke="#b58700" stroke-width="0.5">
-    <path d="M 168 152 Q 150 120 128 105" fill="none" stroke="#2e5a1c" stroke-width="2"/>
-    <ellipse cx="167" cy="149" rx="4" ry="6" transform="rotate(-20 167 149)"/>
-    <ellipse cx="162" cy="138" rx="4" ry="6" transform="rotate(-25 162 138)"/>
-    <ellipse cx="156" cy="127" rx="4" ry="6" transform="rotate(-30 156 127)"/>
-    <ellipse cx="148" cy="118" rx="4" ry="6" transform="rotate(-35 148 118)"/>
-    <ellipse cx="139" cy="111" rx="4" ry="6" transform="rotate(-40 139 111)"/>
-    <ellipse cx="129" cy="106" rx="3.5" ry="5" transform="rotate(-45 129 106)"/>
-  </g>
-
-  <path d="M 28 178 Q 100 205 172 178 L 163 166 Q 100 190 37 166 Z" fill="#fadb14" stroke="#c49a00" stroke-width="0.8"/>
-  <path d="M 28 178 L 18 170 L 25 162 L 37 166 Z" fill="#d4ad00"/>
-  <path d="M 172 178 L 182 170 L 175 162 L 163 166 Z" fill="#d4ad00"/>
-  <path id="ribbonTextPath" d="M 33 178 Q 100 202 167 178" fill="none"/>
-  <text font-family="'Arial', sans-serif" font-weight="bold" font-size="8.5" fill="#000000" text-anchor="middle">
-    <textPath href="#ribbonTextPath" startOffset="50%">SEPUCUK ADAT SERUMPUN PSEKO</textPath>
-  </text>
-</svg>`;
-
-const PF=[['nama','Nama lengkap & alias'],['bin','Bin / Binti'],['nik','NIK'],['tmp','Tempat lahir'],['tgl','Tanggal lahir','date'],['wn','Kewarganegaraan'],['agama','Agama'],['kerja','Pekerjaan'],['alamat','Alamat']];
-const GR=[['p','Calon suami'],['w','Calon istri'],['pa','Ayah calon suami'],['pi','Ibu calon suami'],['wa','Ayah calon istri'],['wi','Ibu calon istri']];
-const META=[['desa','Desa/Kelurahan'],['kec','Kecamatan'],['kab','Kabupaten/Kota'],['alamat_kantor','Alamat Kantor Desa/Kel (untuk Kop)'],['kades','Nama Kepala Desa/Lurah'],['nomor','Nomor surat'],['kota','Tempat surat dibuat'],['tglsurat','Tanggal surat','date'],['kua','KUA Kecamatan'],['akadTgl','Tanggal akad','date'],['akadJam','Pukul akad'],['akadTempat','Tempat akad'],['mahar','Mahar']];
-
-const fmt=s=>{if(!s)return'..............';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})};
-const D=(d,k,def)=>esc(d[k]||def||'.....................');
-const T=(d,p)=>`${D(d,p+'_tmp')}, ${fmt(d[p+'_tgl'])}`;
+const fmt=s=>{if(!s)return'...........................';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})};
+const D=(d,k,def)=>esc(d[k]||def||'...................................................');
+const T=(d,p)=>(d[p+'_tmp']||d[p+'_tgl']) ? `${D(d,p+'_tmp', '.........')}, ${fmt(d[p+'_tgl'])}` : '...................................................';
 const age=(d,p)=>{const t=d[p+'_tgl'];if(!t)return null;const b=new Date(t),n=d.akadTgl?new Date(d.akadTgl):new Date();let a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a};
 const nm=r=>(r.data.p_nama||'(belum diisi)')+' & '+(r.data.w_nama||'(belum diisi)');
-const done=r=>{const ks=GR.flatMap(g=>PF.map(f=>g[0]+'_'+f[0])).concat(META.map(m=>m[0]));return Math.round(ks.filter(k=>r.data[k]).length/ks.length*100)};
-const prevSpouse=(d,p)=>{const st=d[p+'_st']||(p==='p'?'Jejaka':'Perawan');if(st==='Jejaka'||st==='Perawan')return d[p+'_prev']||'-';return D(d,p+'_prev')};
-
-function getLogoHtml(d){
-  if(d.logoCustom) {
-    return `<img src="${esc(d.logoCustom)}" alt="Logo Kop" onerror="this.outerHTML=SAROLANGUN_LOGO_SVG">`;
-  }
-  return SAROLANGUN_LOGO_SVG;
-}
-
-function tags(r){let h='';for(const[p,l]of[['p','Suami'],['w','Istri']]){const a=age(r.data,p);if(a===null)continue;if(a<19)h+=`<span class="tag k">${l} ${a} th: butuh dispensasi PA</span>`;else if(a<21)h+=`<span class="tag w">${l} ${a} th: butuh izin ortu (N5)</span>`}return h||'<span class="tag g">Usia memenuhi</span>'}
+const done=r=>{const ks=GR.filter(g=>!['pm','wm'].includes(g[0])).flatMap(g=>PF.map(f=>g[0]+'_'+f[0])).concat(META.map(m=>m[0]));return Math.round(ks.filter(k=>r.data[k]).length/ks.length*100)};
 
 function dash(){
-const m=new Date().getMonth(),y=new Date().getFullYear();
-const bln=recs.filter(r=>{const d=new Date(r.id);return d.getMonth()===m&&d.getFullYear()===y}).length;
-let n5=0,dsp=0;recs.forEach(r=>{['p','w'].forEach(p=>{const a=age(r.data,p);if(a!==null&&a<19)dsp++;else if(a!==null&&a<21)n5++})});
-
-$('#main').innerHTML=`<div class="top">
-  <h2>Dasbor</h2>
-  <div>
-    <span id="cloud_badge" class="cloud-status"></span>
-    <button class="b o s" id="btn_sync">Sinkronkan</button>
-    <button class="b" id="nw">Buat berkas baru</button>
+  const m=new Date().getMonth(),y=new Date().getFullYear();
+  const bln=recs.filter(r=>{const d=new Date(r.id);return d.getMonth()===m&&d.getFullYear()===y}).length;
+  $('#main').innerHTML=`<div class="top">
+    <h2>Dasbor</h2>
+    <div>
+      <button class="b o s" id="btn_sync">Sinkronkan</button>
+      <button class="b" id="nw">Buat berkas baru</button>
+    </div>
   </div>
-</div>
-<div class="stats">
-  <div class="st"><b>${recs.length}</b><span>Seluruh berkas</span></div>
-  <div class="st"><b>${bln}</b><span>Dibuat bulan ini</span></div>
-  <div class="st"><b>${n5}</b><span>Calon butuh izin orang tua</span></div>
-  <div class="st"><b>${dsp}</b><span>Calon butuh dispensasi kawin</span></div>
-</div>
-<div class="panel">
-  <h3>Daftar berkas</h3>
-  ${recs.length?`<div class="tw"><table class="l"><tr><th>Pasangan</th><th>Akad</th><th>Kelengkapan</th><th>Catatan usia</th><th></th></tr>${recs.map(r=>`<tr><td><b>${esc(nm(r))}</b></td><td>${r.data.akadTgl?fmt(r.data.akadTgl):'-'}</td><td>${done(r)}%</td><td>${tags(r)}</td><td style="white-space:nowrap"><button class="b s" data-pr="${r.id}">Cetak</button> <button class="b o s" data-ed="${r.id}">Ubah</button> <button class="b d s" data-del="${r.id}">Hapus</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Belum ada berkas. Tekan "Buat berkas baru" untuk mengisi data calon pengantin.</div>'}
-</div>
-<p class="hint">Data tersimpan di ${apiUrl ? 'Google Sheets Cloud & ' : ''}peramban perangkat ini. Cocokkan hasil cetak dengan blanko resmi KUA sebelum diserahkan.</p>`;
+  <div class="stats">
+    <div class="st"><b>${recs.length}</b><span>Total berkas</span></div>
+    <div class="st"><b>${bln}</b><span>Bulan ini</span></div>
+  </div>
+  <div class="panel">
+    <h3>Daftar berkas</h3>
+    ${recs.length?`<div class="tw"><table class="l"><tr><th>Pasangan</th><th>Akad</th><th>Kelengkapan</th><th></th></tr>${recs.map(r=>`<tr><td><b>${esc(nm(r))}</b></td><td>${r.data.akadTgl?fmt(r.data.akadTgl):'-'}</td><td>${done(r)}%</td><td style="white-space:nowrap; text-align:right;"><button class="b s" data-pr="${r.id}">Cetak</button> <button class="b o s" data-ed="${r.id}">Ubah</button> <button class="b d s" data-del="${r.id}">Hapus</button></td></tr>`).join('')}</table></div>`:'<div class="empty">Belum ada data.</div>'}
+  </div>
+  <p class="hint">Data dicetak sesuai petunjuk teknis KMA 473 Tahun 2020.</p>`;
 
-updateCloudBadge();
-$('#nw').onclick=()=>{cur={id:Date.now(),data:{wn_default:1,kab:'Sarolangun',p_st:'Jejaka',w_st:'Perawan'}};setV('form')};
-$('#btn_sync').onclick=()=>fetchFromCloud(true);
-document.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>{cur=recs.find(r=>r.id==b.dataset.pr);setV('print')});
-document.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>{cur=recs.find(r=>r.id==b.dataset.ed);setV('form')});
-document.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
-  if(confirm('Hapus berkas ini?')){
-    const delId = b.dataset.del;
-    recs=recs.filter(r=>r.id!=delId);
-    await deleteRecordFromCloud(delId);
-    dash();
-  }
-});
+  $('#nw').onclick=()=>{cur={id:Date.now(),data:{wn_default:1,kab:'Sarolangun',p_st:'Jejaka',w_st:'Perawan'}};setV('form')};
+  $('#btn_sync').onclick=()=>fetchFromCloud(true);
+  document.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>{cur=recs.find(r=>r.id==b.dataset.pr);setV('print')});
+  document.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>{cur=recs.find(r=>r.id==b.dataset.ed);setV('form')});
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
+    if(await customConfirm('Apakah Anda yakin ingin menghapus berkas pasangan ini?')){
+      const delId = b.dataset.del;
+      recs=recs.filter(r=>r.id!=delId);
+      await deleteRecordFromCloud(delId);
+      dash();
+    }
+  });
 }
 
 function inp(k,l,t,v){return `<label>${l}<input data-k="${k}" type="${t||'text'}" value="${esc(v||'')}"></label>`}
+function sel(k,l,opts,v){return `<label>${l}<select data-k="${k}">${opts.map(o=>`<option value="${esc(o)}"${v===o?' selected':''}>${o}</option>`).join('')}</select></label>`}
+
 function form(){
-if(!cur)cur={id:Date.now(),data:{}};
-const d=cur.data;
-if(!d.kab)d.kab='Sarolangun';
-if(!d.p_st)d.p_st='Jejaka';
-if(!d.w_st)d.w_st='Perawan';
-if(d.wn_default){delete d.wn_default;GR.forEach(g=>{d[g[0]+'_wn']='Indonesia';d[g[0]+'_agama']='Islam'})}
-const st=(p,o)=>`<label>Status perkawinan<select data-k="${p}_st">${o.map(x=>`<option value="${esc(x)}"${(d[p+'_st']||(p==='p'?'Jejaka':'Perawan'))===x?' selected':''}>${x}</option>`).join('')}</select></label>`;
+  if(!cur)cur={id:Date.now(),data:{}};
+  const d=cur.data;
+  if(!d.p_st)d.p_st='Jejaka';
+  if(!d.w_st)d.w_st='Perawan';
+  if(!d.kadesJabatan)d.kadesJabatan='Definitif';
+  if(d.wn_default){delete d.wn_default;GR.forEach(g=>{d[g[0]+'_wn']='Indonesia';d[g[0]+'_agama']='Islam'})}
+  const st=(p,o)=>`<label>Status perkawinan<select data-k="${p}_st">${o.map(x=>`<option value="${esc(x)}"${d[p+'_st']===x?' selected':''}>${x}</option>`).join('')}</select></label>`;
 
-$('#main').innerHTML=`<div class="top"><h2>Data calon pengantin</h2><div><button class="b o" id="cx">Batal</button> <button class="b" id="sv">Simpan dan cetak</button></div></div>
-${GR.map(g=>`<div class="panel"><h3>${g[1]}</h3><div class="grid">${PF.filter(f=>!(g[0].length>1&&0)).map(f=>inp(g[0]+'_'+f[0],f[1],f[2],d[g[0]+'_'+f[0]])).join('')}${g[0]==='p'?st('p',['Jejaka','Duda cerai','Duda mati']):g[0]==='w'?st('w',['Perawan','Janda cerai','Janda mati']):''}${g[0]==='p'||g[0]==='w'?inp(g[0]+'_prev',g[0]==='p'?'Nama istri terdahulu (jika ada)':'Nama suami terdahulu (jika ada)','text',d[g[0]+'_prev']):''}</div></div>`).join('')}
-<div class="panel">
-  <h3>Data desa dan rencana akad</h3>
-  <div class="grid">
-    ${META.map(f=>inp(f[0],f[1],f[2],d[f[0]])).join('')}
-    <div class="logo-picker-box">
-      <label>Logo Kop Surat Desa/Kabupaten</label>
-      <div class="logo-picker-flex">
-        <div class="logo-preview-thumb" id="logo_thumb">${getLogoHtml(d)}</div>
-        <div>
-          <input type="file" id="logo_file" accept="image/*" style="font-size:12px;margin-top:0;">
-          <p style="margin:4px 0 0;font-size:11px;color:var(--mut);">Gunakan gambar berpiksel jernih. Secara bawaan menggunakan Logo Kabupaten Sarolangun.</p>
-        </div>
-        ${d.logoCustom ? `<button class="b d s" type="button" id="reset_logo">Gunakan Logo Default Sarolangun</button>` : ''}
-      </div>
-    </div>
-  </div>
-</div>`;
+  $('#main').innerHTML=`<div class="top"><h2>Data pengantin & keluarga</h2><div><button class="b o" id="cx">Batal</button> <button class="b" id="sv">Simpan</button></div></div>
+  ${GR.map(g=>`<div class="panel"><h3>${g[1]}</h3><div class="grid">${PF.map(f=>inp(g[0]+'_'+f[0],f[1],f[2],d[g[0]+'_'+f[0]])).join('')}${g[0]==='pm'||g[0]==='wm'?inp(g[0]+'_tgl_mati','Tanggal Meninggal','date',d[g[0]+'_tgl_mati'])+inp(g[0]+'_tmp_mati','Tempat Meninggal','text',d[g[0]+'_tmp_mati']):''}${g[0]==='p'?st('p',['Jejaka','Duda','Beristri'])+inp('p_istrike','Istri ke- (Jika status Beristri)','number',d['p_istrike']):g[0]==='w'?st('w',['Perawan','Janda']):''}</div></div>`).join('')}
+  <div class="panel"><h3>Data administrasi</h3><div class="grid">
+    ${inp('desa','Desa/Kelurahan','text',d['desa'])}
+    ${inp('kec','Kecamatan','text',d['kec'])}
+    ${inp('kab','Kabupaten/Kota','text',d['kab'])}
+    ${inp('kades','Nama Kepala Desa/Lurah','text',d['kades'])}
+    ${inp('kadesNip','NIP Kepala Desa/Lurah','text',d['kadesNip'])}
+    ${sel('kadesJabatan','Jabatan Kepala Desa',['Definitif','Plt.','Pj.'],d['kadesJabatan'])}
+    ${inp('nomor','Nomor surat','text',d['nomor'])}
+    ${inp('kota','Tempat surat dibuat (ttd)','text',d['kota'])}
+    ${inp('tglsurat','Tanggal pembuatan surat','date',d['tglsurat'])}
+    ${inp('kua','KUA Kecamatan','text',d['kua'])}
+    ${inp('akadTgl','Tanggal akad','date',d['akadTgl'])}
+    ${inp('akadJam','Pukul akad','text',d['akadJam'])}
+    ${inp('akadTempat','Tempat akad','text',d['akadTempat'])}
+    ${inp('isbatTgl','Tgl Penetapan PA (Utk N3)','date',d['isbatTgl'])}
+  </div></div>`;
 
-document.querySelectorAll('[data-k]').forEach(e=>{
-  const update=()=>{d[e.dataset.k]=e.value};
-  e.oninput=update;
-  e.onchange=update;
-});
-$('#cx').onclick=()=>setV('dash');
-$('#sv').onclick=async()=>{
-  const idx = recs.findIndex(r=>r.id===cur.id);
-  if(idx > -1) recs[idx] = cur;
-  else recs.unshift(cur);
-  await saveRecordToCloud(cur);
-  setV('print');
+  document.querySelectorAll('[data-k]').forEach(e=>{
+    const update=()=>{d[e.dataset.k]=e.value};
+    e.oninput=update; e.onchange=update;
+  });
+  $('#cx').onclick=()=>setV('dash');
+  $('#sv').onclick=async()=>{
+    const idx = recs.findIndex(r=>r.id===cur.id);
+    if(idx > -1) recs[idx] = cur;
+    else recs.unshift(cur);
+    await saveRecordToCloud(cur);
+    setV('print');
+  };
+}
+
+const kopText = d => `
+<table style="font-weight:bold; margin-bottom:15px; width:100%;">
+  <tr><td style="width:230px">KANTOR DESA/KELURAHAN</td><td style="width:15px">:</td><td>${D(d,'desa').toUpperCase()}</td></tr>
+  <tr><td>KECAMATAN</td><td>:</td><td>${D(d,'kec').toUpperCase()}</td></tr>
+  <tr><td>KABUPATEN/KOTA</td><td>:</td><td>${D(d,'kab').toUpperCase()}</td></tr>
+</table>`;
+
+const kadesSignLabel = d => {
+  const jab = d.kadesJabatan || 'Definitif';
+  const prefix = jab === 'Definitif' ? 'Kepala Desa' : `${jab} Kepala Desa`;
+  return `${prefix} ${D(d,'desa')}`;
 };
 
-const logoFile = $('#logo_file');
-if(logoFile) {
-  logoFile.onchange = e => {
-    const file = e.target.files[0];
-    if(file) {
-      const reader = new FileReader();
-      reader.onload = ev => {
-        d.logoCustom = ev.target.result;
-        $('#logo_thumb').innerHTML = `<img src="${esc(d.logoCustom)}" alt="Logo">`;
-        form();
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-}
-const resetLogoBtn = $('#reset_logo');
-if(resetLogoBtn) {
-  resetLogoBtn.onclick = () => {
-    delete d.logoCustom;
-    form();
-  };
-}
+const kadesSignatureBlock = d => {
+  const nipVal = d.kadesNip ? `<br>NIP. ${esc(d.kadesNip)}` : '<br>NIP. ........................................';
+  return `${D(d,'kota')}, ${fmt(d.tglsurat)}<br>${kadesSignLabel(d)}<br><br><br><br><u><b>${D(d,'kades')}</b></u>${nipVal}`;
+};
+
+const PR_PDF = (d, p, bLabel, numStart=1) => `
+<table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+  <tr><td style="width:25px;">${numStart}.</td><td style="width:220px;">Nama lengkap dan alias</td><td style="width:15px;">:</td><td>${D(d,p+'_nama')}</td></tr>
+  <tr><td>${numStart+1}.</td><td>${bLabel}</td><td>:</td><td>${D(d,p+'_bin')}</td></tr>
+  <tr><td>${numStart+2}.</td><td>Nomor Induk Kependudukan</td><td>:</td><td>${D(d,p+'_nik')}</td></tr>
+  <tr><td>${numStart+3}.</td><td>Tempat dan tanggal lahir</td><td>:</td><td>${T(d,p)}</td></tr>
+  <tr><td>${numStart+4}.</td><td>Kewarganegaraan</td><td>:</td><td>${D(d,p+'_wn')}</td></tr>
+  <tr><td>${numStart+5}.</td><td>Agama</td><td>:</td><td>${D(d,p+'_agama')}</td></tr>
+  <tr><td>${numStart+6}.</td><td>Pekerjaan</td><td>:</td><td>${D(d,p+'_kerja')}</td></tr>
+  <tr><td>${numStart+7}.</td><td>Alamat</td><td>:</td><td>${D(d,p+'_alamat')}</td></tr>
+</table>`;
+
+const PR_N1 = (d, p, jk) => `
+<table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+  <tr><td style="width:25px;">1.</td><td style="width:250px;">Nama</td><td style="width:15px;">:</td><td>${D(d,p+'_nama')}</td></tr>
+  <tr><td>2.</td><td>Nomor Induk Kependudukan (NIK)</td><td>:</td><td>${D(d,p+'_nik')}</td></tr>
+  <tr><td>3.</td><td>Jenis Kelamin</td><td>:</td><td>${jk}</td></tr>
+  <tr><td>4.</td><td>Tempat dan tanggal lahir</td><td>:</td><td>${T(d,p)}</td></tr>
+  <tr><td>5.</td><td>Kewarganegaraan</td><td>:</td><td>${D(d,p+'_wn')}</td></tr>
+  <tr><td>6.</td><td>Agama</td><td>:</td><td>${D(d,p+'_agama')}</td></tr>
+  <tr><td>7.</td><td>Pekerjaan</td><td>:</td><td>${D(d,p+'_kerja')}</td></tr>
+  <tr><td>8.</td><td>Alamat</td><td>:</td><td>${D(d,p+'_alamat')}</td></tr>
+  <tr><td>9.</td><td>Status pernikahan</td><td>:</td><td></td></tr>
+  <tr><td></td><td colspan="3">
+    <table style="width:100%; margin-top:2px;">
+      <tr><td style="width:120px; vertical-align:top;">a. Laki-laki</td><td>: Jejaka, Duda, atau beristri ke ${jk==='Laki-laki'&&d[p+'_st']==='Beristri'?(d[p+'_istrike']||'......'):'......'}</td></tr>
+      <tr><td style="vertical-align:top;">b. Perempuan</td><td>: Perawan, Janda</td></tr>
+    </table>
+    <div style="margin-top:4px; font-size:11pt;"><em>(Tercatat di sistem: ${D(d,p+'_st')})</em></div>
+  </td></tr>
+</table>`;
+
+const Parent_N1 = (d, p) => `
+<table style="width:100%; margin-bottom:5px;">
+  <tr><td style="width:25px"></td><td style="width:250px">Nama Lengkap dan alias</td><td style="width:15px">:</td><td>${D(d,p+'_nama')}</td></tr>
+  <tr><td></td><td>Nomor Induk Kependudukan (NIK)</td><td>:</td><td>${D(d,p+'_nik')}</td></tr>
+  <tr><td></td><td>Tempat dan tanggal lahir</td><td>:</td><td>${T(d,p)}</td></tr>
+  <tr><td></td><td>Kewarganegaraan</td><td>:</td><td>${D(d,p+'_wn')}</td></tr>
+  <tr><td></td><td>Agama</td><td>:</td><td>${D(d,p+'_agama')}</td></tr>
+  <tr><td></td><td>Pekerjaan</td><td>:</td><td>${D(d,p+'_kerja')}</td></tr>
+  <tr><td></td><td>Alamat</td><td>:</td><td>${D(d,p+'_alamat')}</td></tr>
+</table>`;
+
+const N1_tpl = (d, p, jk, pa, pi) => `
+<div style="float: left; font-size: 11pt; line-height: 1.2; margin-bottom: 15px;">
+  Lampiran V<br>
+  Keputusan Dirjen Bimas Islam No. 473 Tahun 2020
+</div>
+<div class="model-box">Model N1</div>
+<div class="clear"></div>
+${kopText(d)}
+<h4 style="text-decoration:underline;">PENGANTAR NIKAH</h4>
+<div style="text-align:center; margin-bottom:20px">Nomor: ${D(d,'nomor')}</div>
+<p>Yang bertanda tangan di bawah ini menjelaskan dengan sesungguhnya bahwa:</p>
+${PR_N1(d, p, jk)}
+<p>Adalah benar anak dari pernikahan seorang pria:</p>
+${Parent_N1(d, pa)}
+<p>dengan seorang wanita</p>
+${Parent_N1(d, pi)}
+<p>Demikian, Surat pengantar ini dibuat dengan mengingat sumpah jabatan dan untuk dipergunakan sebagaimana mestinya.</p>
+<div class="sg">
+  <div></div>
+  <div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>${kadesSignLabel(d)}<br><br><br><br><u>${D(d,'kades')}</u><br>${d.kadesNip ? 'NIP. ' + esc(d.kadesNip) : ''}</div>
+</div>`;
+
+const N2_tpl = (d) => `
+<div style="float: left; font-size: 11pt; line-height: 1.2; margin-bottom: 15px;">
+  Lampiran VI<br>
+  Keputusan Dirjen Bimas Islam No. 473 Tahun 2020
+</div>
+<div class="model-box">Model N2</div>
+<div class="clear"></div>
+<h4 style="text-align:center; margin-bottom:10px; font-size:13pt;">FORMULIR PERMOHONAN KEHENDAK NIKAH</h4>
+<table style="width:100%; margin-bottom:20px;">
+  <tr><td style="width:80px">Perihal</td><td style="width:10px">:</td><td>Permohonan kehendak nikah</td><td style="text-align:right">${D(d,'kota')}, ${fmt(d.tglsurat)}</td></tr>
+</table>
+<p>Kepada yth,<br>Kepala KUA Kecamatan /PPN LN ${D(d,'kua')}<br>di ${D(d,'kota')}</p>
+<p style="margin-top:20px">Dengan hormat, kami mengajukan permohonan kehendak nikah untuk atas nama:</p>
+<table style="margin-left:20px; width:90%; margin-bottom:15px;">
+  <tr><td style="width:150px">Calon suami</td><td style="width:15px">:</td><td>${D(d,'p_nama')}</td></tr>
+  <tr><td>Calon istri</td><td>:</td><td>${D(d,'w_nama')}</td></tr>
+  <tr><td>Hari/Tanggal/Jam</td><td>:</td><td>${fmt(d.akadTgl)} / ${D(d,'akadJam')} WIB</td></tr>
+  <tr><td>Tempat akad nikah</td><td>:</td><td>${D(d,'akadTempat')}</td></tr>
+</table>
+<p>Bersama ini kami sampaikan surat-surat yang diperlukan untuk diperiksa sebagai berikut:</p>
+<ol style="margin-top:5px; margin-bottom:15px;">
+  <li>Surat pengantar nikah dari Desa/Kelurahan</li>
+  <li>Persetujuan calon mempelai</li>
+  <li>Fotokopi KTP</li>
+  <li>Fotokopi akte kelahiran</li>
+  <li>Fotokopi kartu keluarga</li>
+  <li>Paspoto 2x3 = 3 lembar berlatar belakang biru</li>
+  <li>.......................................................................</li>
+  <li>.......................................................................</li>
+</ol>
+<p>Demikian permohonan ini kami sampaikan, kiranya dapat diperiksa, dihadiri, dan dicatat sesuai dengan ketentuan peraturan perundang-undangan.</p>
+<div class="sg" style="margin-top:30px;">
+  <div>Diterima Tanggal .........................<br>Yang menerima,<br>Kepala KUA/PPN Luar Negeri<br><br><br><br>...................................................</div>
+  <div><br>Wassalam,<br>Pemohon<br><br><br><br><u>${D(d,'p_nama')}</u></div>
+</div>`;
+
+const N3_tpl = (d) => `
+<div style="float: left; font-size: 11pt; line-height: 1.2; margin-bottom: 15px;">
+  Lampiran VII<br>
+  Keputusan Dirjen Bimas Islam No. 473 Tahun 2020
+</div>
+<div class="model-box">Model N3</div>
+<div class="clear"></div>
+<table style="width:100%; margin-bottom:20px;">
+  <tr><td style="width:80px">Perihal</td><td style="width:10px">:</td><td>Permohonan pencatatan isbat</td><td style="text-align:right">${D(d,'kota')}, ${fmt(d.tglsurat)}</td></tr>
+</table>
+<p>Kepada yth,<br>Kepala KUA Kecamatan /PPN LN ${D(d,'kua')}<br>di ${D(d,'kota')}</p>
+<p style="margin-top:20px">Dengan hormat, kami mengajukan permohonan pencatatan isbat untuk atas nama:</p>
+<table style="margin-left:20px; width:90%; margin-bottom:15px;">
+  <tr><td style="width:250px">Suami</td><td style="width:15px">:</td><td>${D(d,'p_nama')}</td></tr>
+  <tr><td>Istri</td><td>:</td><td>${D(d,'w_nama')}</td></tr>
+  <tr><td>Tanggal penetapan Pengadilan Agama</td><td>:</td><td>${d.isbatTgl ? fmt(d.isbatTgl) : '.......................................................'}</td></tr>
+</table>
+<p>Bersama ini kami sampaikan surat-surat yang diperlukan untuk diperiksa sebagai berikut:</p>
+<ol style="margin-top:5px; margin-bottom:15px;">
+  <li>Putusan Isbat</li>
+  <li>Fotokopi KTP</li>
+  <li>Fotokopi kartu keluarga</li>
+  <li>Pasfoto 2x3 = 3 lembar berlatar belakang biru</li>
+  <li>.......................................................................</li>
+  <li>.......................................................................</li>
+</ol>
+<p>Demikian permohonan ini kami sampaikan, kiranya dapat diperiksa, dihadiri, dan dicatat sesuai dengan ketentuan peraturan perundang-undangan.</p>
+<div class="sg" style="margin-top:30px;">
+  <div>Diterima Tanggal .........................<br>Yang menerima,<br>Kepala KUA/PPN Luar Negeri<br><br><br><br>...................................................</div>
+  <div><br>Wassalam,<br>Pemohon<br><br><br><br><u>${D(d,'p_nama')}</u></div>
+</div>`;
+
+const N4_tpl = (d) => `
+<div style="float: left; font-size: 11pt; line-height: 1.2; margin-bottom: 15px;">
+  Lampiran VIII<br>
+  Keputusan Dirjen Bimas Islam No. 473 Tahun 2020
+</div>
+<div class="model-box">Model N4</div>
+<div class="clear"></div>
+<h4 style="margin-bottom:20px">FORMULIR PERSETUJUAN CALON PENGANTIN<br><br>SURAT PERSETUJUAN PENGANTIN</h4>
+<p>Yang bertanda tangan di bawah ini:</p>
+<p>A. Calon suami:</p>
+${PR_PDF(d, 'p', 'Bin')}
+<p>B. Calon Istri:</p>
+${PR_PDF(d, 'w', 'Binti')}
+<p>Menyatakan dengan sesungguhnya bahwa atas dasar suka rela, dengan kesadaran sendiri, tanpa ada paksaan dari siapapun juga, setuju untuk melangsungkan pernikahan.</p>
+<p>Demikian Surat persetujuan ini di buat untuk digunakan seperlunya.</p>
+<div class="sg" style="margin-top:30px;">
+  <div><br>Calon Suami<br><br><br><br><u>${D(d,'p_nama')}</u></div>
+  <div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>Calon Istri<br><br><br><br><u>${D(d,'w_nama')}</u></div>
+</div>`;
+
+const PR_N5_A_B = (d, p, bLabel, prefix) => `
+<table style="width:100%; border-collapse:collapse; margin-bottom:5px;">
+  <tr><td style="width:25px;">${prefix}</td><td style="width:25px;">1.</td><td style="width:225px;">Nama lengkap dan alias</td><td style="width:15px;">:</td><td>${D(d,p+'_nama')}</td></tr>
+  <tr><td></td><td>2.</td><td>${bLabel}</td><td>:</td><td>${D(d,p+'_bin')}</td></tr>
+  <tr><td></td><td>3.</td><td>Nomor Induk Kependudukan</td><td>:</td><td>${D(d,p+'_nik')}</td></tr>
+  <tr><td></td><td>4.</td><td>Tempat dan tanggal lahir</td><td>:</td><td>${T(d,p)}</td></tr>
+  <tr><td></td><td>5.</td><td>Kewarganegaraan</td><td>:</td><td>${D(d,p+'_wn')}</td></tr>
+  <tr><td></td><td>6.</td><td>Agama</td><td>:</td><td>${D(d,p+'_agama')}</td></tr>
+  <tr><td></td><td>7.</td><td>Pekerjaan</td><td>:</td><td>${D(d,p+'_kerja')}</td></tr>
+  <tr><td></td><td>8.</td><td>Alamat</td><td>:</td><td>${D(d,p+'_alamat')}</td></tr>
+</table>`;
+
+const PR_N5_Anak_Mantu = (d, p, bLabel) => `
+<table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+  <tr><td style="width:25px;">1.</td><td style="width:250px;">Nama lengkap dan alias</td><td style="width:15px;">:</td><td>${D(d,p+'_nama')}</td></tr>
+  <tr><td>2.</td><td>${bLabel}</td><td>:</td><td>${D(d,p+'_bin')}</td></tr>
+  <tr><td>3.</td><td>Nomor Induk Kependudukan</td><td>:</td><td>${D(d,p+'_nik')}</td></tr>
+  <tr><td>4.</td><td>Tempat dan tanggal lahir</td><td>:</td><td>${T(d,p)}</td></tr>
+  <tr><td>5.</td><td>Kewarganegaraan</td><td>:</td><td>${D(d,p+'_wn')}</td></tr>
+  <tr><td>6.</td><td>Agama</td><td>:</td><td>${D(d,p+'_agama')}</td></tr>
+  <tr><td>7.</td><td>Pekerjaan</td><td>:</td><td>${D(d,p+'_kerja')}</td></tr>
+  <tr><td>8.</td><td>Alamat</td><td>:</td><td>${D(d,p+'_alamat')}</td></tr>
+</table>`;
+
+const N5_single = (d, anak, anakJK, ayah, ibu, mantu, mantuJK) => `
+<div style="float: left; font-size: 11pt; line-height: 1.2; margin-bottom: 15px;">
+  Lampiran IX<br>
+  Keputusan Dirjen Bimas Islam No. 473 Tahun 2020
+</div>
+<div class="model-box">Model N5</div>
+<div class="clear"></div>
+<h4 style="margin-bottom:10px">FORMULIR SURAT IZIN ORANG TUA</h4>
+<h4 style="text-decoration:underline; font-weight:normal; margin-bottom:20px">SURAT IZIN ORANG TUA</h4>
+<p>Yang bertanda tangan di bawah ini:</p>
+${PR_N5_A_B(d, ayah, 'Bin', 'A.')}
+${PR_N5_A_B(d, ibu, 'Binti', 'B.')}
+<p style="margin-top:10px;">adalah ayah dan ibu kandung/wali/pengampu dari :</p>
+${PR_N5_Anak_Mantu(d, anak, 'Bin /Binti')}
+<p>Memberikan izin kepada anak kami untuk melakukan pernikahan dengan:</p>
+${PR_N5_Anak_Mantu(d, mantu, 'Bin/Binti')}
+<p>Demikian Surat izin ini di buat dengan kesadaran tanpa ada paksaan dari siapapun dan untuk digunakan seperlunya.</p>
+<div class="sg" style="margin-top:30px;">
+  <div><br>Ayah/wali/pengampu<br><br><br><br>..............................................</div>
+  <div>${D(d,'kota', '....................')}, ${d.tglsurat ? fmt(d.tglsurat) : '....... ...............20.....'}<br>Ibu/wali/pengampu<br><br><br><br>..............................................</div>
+</div>`;
+
+const N6_single = (d, role) => {
+  const m = role === 'p' ? 'pm' : 'wm';
+  const mJK = role === 'p' ? 'Binti' : 'Bin';
+  return `
+<div class="model-box">Model N6</div>
+<div class="clear"></div>
+${kopText(d)}
+<h4 style="text-decoration:underline;">SURAT KETERANGAN KEMATIAN SUAMI/ISTRI</h4>
+<div style="text-align:center; margin-bottom:20px">Nomor: ${D(d,'nomor')}</div>
+<p>Yang bertanda tangan di bawah ini menerangkan dengan sesungguhnya bahwa:</p>
+<p>A.</p>
+${PR_PDF(d, m, mJK)}
+<p style="margin: 15px 0;">Telah meninggal dunia pada tanggal ${d[m+'_tgl_mati'] ? fmt(d[m+'_tgl_mati']) : '........................................................................................'}<br>Di ${D(d, m+'_tmp_mati', '............................................................................................................................................')}</p>
+<p>Yang bersangkutan adalah suami/istri*) dari:</p>
+<p>B.</p>
+${PR_PDF(d, role, role === 'p' ? 'Bin' : 'Binti')}
+<p>Demikian surat keterangan ini dibuat dengan mengingat sumpah jabatan dan untuk dipergunakan seperlunya.</p>
+<div class="sg" style="margin-top:30px; align-items:flex-end;">
+  <div style="text-align:left; font-size:11pt;">*) coret yang tidak perlu<br>**)nama terang</div>
+  <div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>${kadesSignLabel(d)}<br><br><br><br><u>${D(d,'kades')}</u><br>${d.kadesNip ? 'NIP. ' + esc(d.kadesNip) + '<br>' : ''}**)</div>
+</div>`;
+};
+
+const DOCS={
+  N1:d=>N1_tpl(d,'p','Laki-laki','pa','pi')+'<div class="pg"></div>'+N1_tpl(d,'w','Perempuan','wa','wi'),
+  N2:d=>N2_tpl(d),
+  N3:d=>N3_tpl(d),
+  N4:d=>N4_tpl(d),
+  N5:d=>N5_single(d,'p','Laki-laki','pa','pi','w','Perempuan')+'<div class="pg"></div>'+N5_single(d,'w','Perempuan','wa','wi','p','Laki-laki'),
+  N6:d=>N6_single(d,'p')+'<div class="pg"></div>'+N6_single(d,'w')
+};
+const LBL={N1:'N1 Pengantar Nikah',N2:'N2 Kehendak Nikah',N3:'N3 Isbat',N4:'N4 Persetujuan',N5:'N5 Izin Ortu',N6:'N6 Kematian'};
+
+function prt(){
+  if(!cur){$('#main').innerHTML='<div class="top"><h2>Cetak berkas</h2></div><div class="panel empty">Pilih berkas dari dasbor lebih dulu.</div>';return}
+  $('#main').innerHTML=`<div class="top"><h2>${esc(nm(cur))}</h2><div><button class="b o" onclick="form()">Ubah data</button> <button class="b" onclick="window.print()">Cetak</button></div></div>
+  <div class="tabs">${Object.keys(LBL).map(k=>`<button class="b" data-d="${k}" aria-pressed="${k===doc}">${LBL[k]}</button>`).join('')}</div>
+  <p class="hint">Beberapa form (N1, N5, N6) berisi 2 halaman (suami & istri). Titik-titik dapat ditulis tangan setelah dicetak.</p>
+  <div class="paper">${DOCS[doc](cur.data)}</div>`;
+  document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{doc=b.dataset.d;prt()});
 }
 
 function settingsView() {
-  $('#main').innerHTML = `<div class="top"><h2>Pengaturan Cloud API</h2></div>
+  $('#main').innerHTML = `<div class="top"><h2>Pengaturan Cloud</h2></div>
   <div class="panel">
-    <h3>Penyematan Google Apps Script API</h3>
-    <p style="font-size:13px;color:var(--mut);margin-bottom:14px;">Masukkan Web App URL dari Google Apps Script untuk menyinkronkan data secara otomatis ke Google Sheets.</p>
-    <div style="margin-bottom:14px;">
-      <label>Google Apps Script Web App URL
-        <input type="url" id="api_url_input" placeholder="https://script.google.com/macros/s/AKfycbyyRpDZwx-ujtcDT9Sy2DR6HBAvC2LOm8BZHou_RuL1D3GwLkd4WVI9WoTOhqK5vuL2/exec" value="${esc(apiUrl)}">
-      </label>
-    </div>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-      <button class="b" id="save_api">Simpan & Hubungkan</button>
-      <button class="b o" id="test_api">Uji Koneksi</button>
-      <span id="api_test_res" style="font-size:13px;"></span>
-    </div>
-  </div>
-  <div class="panel">
-    <h3>Petunjuk Pemasangan Backend</h3>
-    <ol style="font-size:13px;line-height:1.7;padding-left:20px;color:var(--ink);">
-      <li>Buka Google Sheets Anda dan pilih menu <b>Ekstensi &gt; Apps Script</b>.</li>
-      <li>Salin seluruh kode dari file <code>Code.gs</code> yang baru ke dalam editor Apps Script.</li>
-      <li>Jalankan fungsi <code>setupDatabase</code> satu kali.</li>
-      <li>Klik <b>Terapkan (Deploy) &gt; Terapkan sebagai Aplikasi Web (New deployment)</b>.</li>
-      <li>Atur <i>Jalankan Sebagai (Execute as)</i>: <b>Saya (Me)</b>.</li>
-      <li>Atur <i>Siapa yang memiliki akses (Who has access)</i>: <b>Siapa saja (Anyone)</b>.</li>
-      <li>Salin URL Aplikasi Web yang dihasilkan dan tempelkan pada kolom di atas.</li>
-      <li><b>PENTING:</b> Jika Anda memperbarui kode yang sudah ada, buatlah <b>Versi Baru (New Version)</b> pada menu Deployment.</li>
-    </ol>
+    <h3>Penyematan API Google Apps Script</h3>
+    <input type="url" id="api_url_input" placeholder="https://script.google.com/macros/s/AKfycbyyRpDZwx-ujtcDT9Sy2DR6HBAvC2LOm8BZHou_RuL1D3GwLkd4WVI9WoTOhqK5vuL2/exec" value="${esc(apiUrl)}" style="margin-bottom:14px">
+    <button class="b" id="save_api">Simpan</button>
   </div>`;
-
   $('#save_api').onclick = async () => {
     apiUrl = $('#api_url_input').value.trim();
     localStorage.setItem(API_KEY, apiUrl);
-    alert('URL API Cloud berhasil disimpan!');
+    await customAlert('URL API Cloud berhasil disimpan!');
     await fetchFromCloud();
     setV('dash');
   };
-
-  $('#test_api').onclick = async () => {
-    const testUrl = $('#api_url_input').value.trim();
-    const resEl = $('#api_test_res');
-    if(!testUrl) {
-      resEl.style.color = 'var(--bad)';
-      resEl.innerText = 'Silakan isi URL terlebih dahulu.';
-      return;
-    }
-    resEl.style.color = 'var(--mut)';
-    resEl.innerText = 'Mencoba menghubungkan...';
-    try {
-      const res = await fetch(testUrl + '?action=ping');
-      const json = await res.json();
-      if(json && json.status === 'success') {
-        resEl.style.color = 'var(--ok)';
-        resEl.innerText = '✓ Berhasil terhubung ke Google Sheets!';
-      } else {
-        resEl.style.color = 'var(--bad)';
-        resEl.innerText = 'Respon tidak sesuai: ' + JSON.stringify(json);
-      }
-    } catch(e) {
-      resEl.style.color = 'var(--bad)';
-      resEl.innerText = 'Gagal terhubung: ' + e.message;
-    }
-  };
-}
-
-const PR=(d,p,bin,extra)=>`<table>${[['Nama lengkap dan alias',D(d,p+'_nama')],[bin,D(d,p+'_bin')],['NIK',D(d,p+'_nik')],['Tempat/tanggal lahir',T(d,p)],['Kewarganegaraan',D(d,p+'_wn')],['Agama',D(d,p+'_agama')],['Pekerjaan',D(d,p+'_kerja')],['Alamat',D(d,p+'_alamat')]].concat(extra||[]).map(r=>`<tr><td style="width:32%">${r[0]}</td><td style="width:3%">:</td><td>${r[1]}</td></tr>`).join('')}</table>`;
-
-const kop = d => `
-<div class="kop">
-  <div class="kop-logo">${getLogoHtml(d)}</div>
-  <div class="kop-text">
-    PEMERINTAH KABUPATEN ${D(d,'kab').toUpperCase()}<br>
-    KECAMATAN ${D(d,'kec').toUpperCase()}<br>
-    DESA/KELURAHAN ${D(d,'desa').toUpperCase()}
-    ${d.alamat_kantor ? `<div class="sub-alamat">${esc(d.alamat_kantor)}</div>` : ''}
-  </div>
-  <div class="kop-spacer"></div>
-</div>`;
-
-const ttd=d=>`<div class="sg"><div></div><div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>Kepala Desa/Lurah<br><br><br><br><u>${D(d,'kades')}</u></div></div>`;
-const head=(d,t)=>`${kop(d)}<h4>${t}</h4><div class="no">Nomor: ${D(d,'nomor')}</div>`;
-const sd=(d)=>`Yang bertanda tangan di bawah ini, Kepala Desa/Lurah ${D(d,'desa')} Kecamatan ${D(d,'kec')} Kabupaten/Kota ${D(d,'kab')}, menerangkan dengan sesungguhnya bahwa:`;
-const side=[['p','w','pa','pi','Bin','Binti'],['w','p','wa','wi','Binti','Bin']];
-
-const DOCS={
-N1:d=>head(d,'MODEL N1: SURAT KETERANGAN UNTUK NIKAH')+sd(d)+`<p style="margin-top:10px"><b>A. Calon Pengantin Pria</b></p>`+PR(d,'p','Bin',[['Status perkawinan',D(d,'p_st','Jejaka')],['Istri terdahulu',prevSpouse(d,'p')]])+`<p style="margin-top:10px"><b>B. Calon Pengantin Wanita</b></p>`+PR(d,'w','Binti',[['Status perkawinan',D(d,'w_st','Perawan')],['Suami terdahulu',prevSpouse(d,'w')]])+`<p>Benar bahwa nama-nama tersebut adalah penduduk desa/kelurahan kami dan sepanjang pengetahuan kami tidak terdapat halangan untuk melangsungkan pernikahan menurut hukum agama dan peraturan perundang-undangan.</p><p>Demikian surat keterangan ini dibuat dengan sebenarnya untuk digunakan sebagaimana mestinya.</p>`+ttd(d),
-N2:d=>side.map(s=>head(d,'MODEL N2: SURAT KETERANGAN ASAL-USUL')+sd(d)+PR(d,s[0],s[4])+`<p>Adalah benar anak dari perkawinan seorang pria <b>${D(d,s[2]+'_nama')}</b> dengan seorang wanita <b>${D(d,s[3]+'_nama')}</b>.</p><p>Demikian surat keterangan ini dibuat dengan mengingat sumpah jabatan dan untuk digunakan seperlunya.</p>`+ttd(d)).join('<div class="pg"></div>'),
-N3:d=>kop(d)+`<h4>MODEL N3: SURAT PERSETUJUAN CALON PENGANTIN</h4><div class="no">&nbsp;</div><p>Yang bertanda tangan di bawah ini:</p><p><b>Calon Suami</b></p>`+PR(d,'p','Bin')+`<p><b>Calon Istri</b></p>`+PR(d,'w','Binti')+`<p>Menyatakan dengan sesungguhnya bahwa atas dasar suka rela, dengan kesadaran sendiri, tanpa ada paksaan dari pihak mana pun, setuju untuk melangsungkan pernikahan.</p><p>Demikian surat persetujuan ini dibuat untuk digunakan seperlunya.</p><div class="sg"><div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>Calon Suami<br><br><br><br><u>${D(d,'p_nama')}</u></div><div><br>Calon Istri<br><br><br><br><u>${D(d,'w_nama')}</u></div></div>`,
-N4:d=>side.map(s=>head(d,'MODEL N4: SURAT KETERANGAN TENTANG ORANG TUA')+sd(d)+`<p><b>I. Ayah</b></p>`+PR(d,s[2],'Bin')+`<p><b>II. Ibu</b></p>`+PR(d,s[3],'Binti')+`<p>Adalah benar ayah dan ibu kandung dari <b>${D(d,s[0]+'_nama')}</b> ${s[4]} ${D(d,s[0]+'_bin')}, lahir di ${T(d,s[0])}, beralamat di ${D(d,s[0]+'_alamat')}, yang akan melangsungkan pernikahan dengan <b>${D(d,s[1]+'_nama')}</b> ${s[5]} ${D(d,s[1]+'_bin')}.</p><p>Demikian surat keterangan ini dibuat dengan sebenarnya untuk digunakan sebagaimana mestinya.</p>`+ttd(d)).join('<div class="pg"></div>'),
-N5:d=>side.map(s=>{const a=age(d,s[0]);return kop(d)+`<h4>MODEL N5: SURAT IZIN ORANG TUA</h4><div class="no">${a!==null?`(Calon pengantin berusia ${a} tahun)`:'&nbsp;'}</div><p>Yang bertanda tangan di bawah ini:</p><p><b>Ayah</b></p>`+PR(d,s[2],'Bin')+`<p><b>Ibu</b></p>`+PR(d,s[3],'Binti')+`<p>Adalah ayah dan ibu kandung dari calon pengantin ${s[0]==='p'?'pria':'wanita'}:</p>`+PR(d,s[0],s[4])+`<p>Dengan ini <b>memberikan izin</b> kepada anak kami tersebut untuk melangsungkan pernikahan dengan <b>${D(d,s[1]+'_nama')}</b> ${s[5]} ${D(d,s[1]+'_bin')}.</p><p>Demikian surat izin ini dibuat dengan penuh kesadaran dan tanpa paksaan.</p><div class="sg"><div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>Ayah<br><br><br><br><u>${D(d,s[2]+'_nama')}</u></div><div><br>Ibu<br><br><br><br><u>${D(d,s[3]+'_nama')}</u></div></div>`}).join('<div class="pg"></div>'),
-N7:d=>kop(d)+`<p style="text-align:right">${D(d,'kota')}, ${fmt(d.tglsurat)}</p><p>Perihal: <b>Pemberitahuan Kehendak Nikah</b></p><p>Kepada Yth.<br>Kepala KUA Kecamatan ${D(d,'kua')}<br>di tempat</p><p><i>Assalamu'alaikum Wr. Wb.</i></p><p>Dengan hormat, kami mengajukan permohonan agar pernikahan calon suami:</p>`+PR(d,'p','Bin')+`<p>dengan calon istri:</p>`+PR(d,'w','Binti')+`<p>dapat dilangsungkan pada:</p><table><tr><td style="width:32%">Hari/tanggal</td><td style="width:3%">:</td><td>${fmt(d.akadTgl)}</td></tr><tr><td>Pukul</td><td>:</td><td>${D(d,'akadJam')} WIB</td></tr><tr><td>Tempat</td><td>:</td><td>${D(d,'akadTempat')}</td></tr><tr><td>Mahar</td><td>:</td><td>${D(d,'mahar')}</td></tr></table><p>Bersama ini kami lampirkan surat-surat yang diperlukan. Demikian permohonan ini kami sampaikan, atas perhatian Bapak kami ucapkan terima kasih.</p><p><i>Wassalamu'alaikum Wr. Wb.</i></p><div class="sg"><div>Calon Suami<br><br><br><br><u>${D(d,'p_nama')}</u></div><div>Calon Istri<br><br><br><br><u>${D(d,'w_nama')}</u></div></div>`
-};
-const LBL={N1:'N1 Keterangan Nikah',N2:'N2 Asal-Usul',N3:'N3 Persetujuan',N4:'N4 Orang Tua',N5:'N5 Izin Orang Tua',N7:'Permohonan (N7)'};
-
-function prt(){
-if(!cur){$('#main').innerHTML='<div class="top"><h2>Cetak berkas</h2></div><div class="panel empty">Pilih berkas dari dasbor atau buat berkas baru lebih dulu.</div>';return}
-$('#main').innerHTML=`<div class="top"><h2>${esc(nm(cur))}</h2><div><button class="b o" onclick="form()">Ubah data</button> <button class="b" onclick="window.print()">Cetak halaman ini</button></div></div>
-<div class="tabs">${Object.keys(LBL).map(k=>`<button class="b" data-d="${k}" aria-pressed="${k===doc}">${LBL[k]}</button>`).join('')}</div>
-<p class="hint">${tags(cur)} Titik-titik berarti data belum diisi dan dapat ditulis tangan setelah dicetak.${doc==='N2'||doc==='N4'||doc==='N5'?' Berkas ini terdiri dari dua lembar: calon suami lalu calon istri.':''}</p>
-<div class="paper">${DOCS[doc](cur.data)}</div>`;
-document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{doc=b.dataset.d;prt()});
 }
 
 function setV(v){
   view=v;
   document.querySelectorAll('.nav').forEach(n=>n.setAttribute('aria-current',n.dataset.v===v));
-  if (v === 'settings') {
-    settingsView();
-  } else {
-    ({dash,form,print:prt})[v]();
-  }
+  if (v === 'settings') settingsView();
+  else ({dash,form,print:prt})[v]();
   window.scrollTo(0,0);
 }
 
 document.querySelectorAll('.nav').forEach(n=>n.onclick=()=>{
-  if(n.dataset.v==='form'&&!cur) {
-    cur={id:Date.now(),data:{wn_default:1,kab:'Sarolangun',p_st:'Jejaka',w_st:'Perawan'}};
-  }
+  if(n.dataset.v==='form'&&!cur) cur={id:Date.now(),data:{p_st:'Jejaka',w_st:'Perawan'}};
   setV(n.dataset.v);
 });
 
-// Inisialisasi awal
 if (apiUrl) fetchFromCloud();
 setV('dash');
 </script>
