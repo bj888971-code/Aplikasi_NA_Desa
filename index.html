@@ -50,38 +50,38 @@ input,select{width:100%;margin-top:3px;padding:8px 10px;border:1px solid var(--l
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .tabs .b{padding:6px 12px}
 .tabs .b[aria-pressed=false]{background:transparent;color:var(--pri)}
-
-.paper{background:#fff;color:#000;max-width:800px;margin:0 auto;padding:40px 48px;font:12pt/1.5 "Times New Roman",Times,serif;border:1px solid var(--line);overflow-x:auto}
-.paper p { margin: 0 0 10px 0; }
-.paper h4{text-align:center;margin:14px 0 2px;font-size:13pt;}
-.model-box { float: right; border: 1.5px solid #000; padding: 4px 10px; font-weight: bold; font-size: 11pt; margin-bottom:15px; }
+.paper{background:#fff;color:#000;width:215mm;min-height:330mm;margin:0 auto;padding:25mm 30mm;font:12pt/1.5 "Times New Roman",Times,serif;border:1px solid var(--line);box-sizing:border-box;overflow:hidden}
+.paper p { margin: 0 0 8px 0; }
+.paper h4{text-align:center;margin:10px 0 2px;font-size:12.5pt;}
+.model-box { float: right; border: 1.5px solid #000; padding: 3px 8px; font-weight: bold; font-size: 11pt; margin-bottom:10px; }
 .clear { clear: both; }
 
-.paper table { border-collapse: collapse; margin-bottom: 10px; width: 100%; }
-.paper td { padding: 2px; vertical-align: top; }
-.paper .sg{display:flex;justify-content:space-between;margin-top:22px;text-align:center}
+.paper table { border-collapse: collapse; margin-bottom: 8px; width: 100%; }
+.paper td { padding: 1px 2px; vertical-align: top; }
+.paper .sg{display:flex;justify-content:space-between;margin-top:15px;text-align:center}
 .paper .sg>div{min-width:40%}
-.paper .pg{page-break-after:always;border-bottom:2px dashed #bbb;margin:28px 0}
+.paper .pg{page-break-after:always;break-after:page;margin:0;padding:0;height:0}
 .hint{font-size:13px;color:var(--mut);margin:0 0 12px}
 
 #modal_overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding: 20px; }
 #modal_box { background:var(--panel); padding:24px; border-radius:8px; width:100%; max-width:400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
 #modal_msg { margin-top:0; font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
 
-@media(max-width:760px){
+@media(max-width:860px){
   .app{grid-template-columns:1fr}
   aside{flex-direction:row;flex-wrap:wrap;align-items:center}
   aside p{display:none}
   aside h1{width:100%}
-  .paper{padding:20px}
+  .paper{width:100%;padding:20px;min-height:auto}
 }
 @media print{
+  @page{size:215mm 330mm;margin:0}
   body{background:#fff}
   aside,.top,.tabs,.hint,.noprint{display:none!important}
   .app{display:block}
   main{padding:0}
-  .paper{border:0;max-width:none;padding:0; font-size: 12pt;}
-  .paper .pg{border:0;margin:0}
+  .paper{border:0;width:215mm;min-height:330mm;max-width:none;padding:25mm 30mm;font-size:12pt;box-shadow:none;page-break-after:always;break-after:page}
+  .paper .pg{page-break-after:always;break-after:page;border:0;margin:0;height:0}
 }
 </style>
 </head>
@@ -329,13 +329,13 @@ const PR_N1 = (d, p, jk) => {
       statusSuamiStr = "<b>Duda</b>";
     } else if (stVal === 'Beristri') {
       const istriKeVal = d['p_istrike'] ? `Istri ke-${esc(d['p_istrike'])}` : 'Istri ke-......';
-      statusSuamiStr = `<b>Beristri (${istriKeVal})</b>`;
+      statusSuamiStr = `<b>beristri ${istriKeVal}</b>`;
     }
   }
 
   return `
-<table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
-  <tr><td style="width:25px;">1.</td><td style="width:250px;">Nama</td><td style="width:15px;">:</td><td>${D(d,p+'_nama')}</td></tr>
+<table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
+  <tr><td style="width:25px;">1.</td><td style="width:240px;">Nama</td><td style="width:15px;">:</td><td>${D(d,p+'_nama')}</td></tr>
   <tr><td>2.</td><td>Nomor Induk Kependudukan (NIK)</td><td>:</td><td>${D(d,p+'_nik')}</td></tr>
   <tr><td>3.</td><td>Jenis Kelamin</td><td>:</td><td>${jk}</td></tr>
   <tr><td>4.</td><td>Tempat dan tanggal lahir</td><td>:</td><td>${T(d,p)}</td></tr>
@@ -345,8 +345,8 @@ const PR_N1 = (d, p, jk) => {
   <tr><td>8.</td><td>Alamat</td><td>:</td><td>${D(d,p+'_alamat')}</td></tr>
   <tr><td>9.</td><td>Status pernikahan</td><td>:</td><td></td></tr>
   <tr><td></td><td colspan="3">
-    <table style="width:100%; margin-top:2px;">
-      <tr><td style="width:120px; vertical-align:top;">a. Laki-laki</td><td>: ${statusSuamiStr}</td></tr>
+    <table style="width:100%; margin-top:1px;">
+      <tr><td style="width:120px; vertical-align:top;">a. Laki-laki</td><td>: ${jk==='Laki-laki'?statusSuamiStr:'Jejaka, Duda, atau beristri'}</td></tr>
       <tr><td style="vertical-align:top;">b. Perempuan</td><td>: ${jk==='Perempuan' && stVal?`<b>${stVal}</b>`:'Perawan, Janda'}</td></tr>
     </table>
   </td></tr>
@@ -354,8 +354,8 @@ const PR_N1 = (d, p, jk) => {
 };
 
 const Parent_N1 = (d, p) => `
-<table style="width:100%; margin-bottom:5px;">
-  <tr><td style="width:25px"></td><td style="width:250px">Nama Lengkap dan alias</td><td style="width:15px">:</td><td>${D(d,p+'_nama')}</td></tr>
+<table style="width:100%; margin-bottom:4px;">
+  <tr><td style="width:25px"></td><td style="width:240px">Nama Lengkap dan alias</td><td style="width:15px">:</td><td>${D(d,p+'_nama')}</td></tr>
   <tr><td></td><td>Nomor Induk Kependudukan (NIK)</td><td>:</td><td>${D(d,p+'_nik')}</td></tr>
   <tr><td></td><td>Tempat dan tanggal lahir</td><td>:</td><td>${T(d,p)}</td></tr>
   <tr><td></td><td>Kewarganegaraan</td><td>:</td><td>${D(d,p+'_wn')}</td></tr>
@@ -365,48 +365,48 @@ const Parent_N1 = (d, p) => `
 </table>`;
 
 const N1_tpl = (d, p, jk, pa, pi) => `
-<div style="float: left; font-size: 11pt; line-height: 1.2; margin-bottom: 15px;">
+<div style="float: left; font-size: 10.5pt; line-height: 1.2; margin-bottom: 10px;">
   Lampiran V<br>
   Keputusan Dirjen Bimas Islam No. 473 Tahun 2020
 </div>
 <div class="model-box">Model N1</div>
 <div class="clear"></div>
 ${kopText(d)}
-<h4 style="text-decoration:underline;">PENGANTAR NIKAH</h4>
-<div style="text-align:center; margin-bottom:20px">Nomor: ${D(d,'nomor')}</div>
-<p>Yang bertanda tangan di bawah ini menjelaskan dengan sesungguhnya bahwa:</p>
+<h4 style="text-decoration:underline; font-size:12pt; margin:8px 0;">PENGANTAR NIKAH</h4>
+<div style="text-align:center; margin-bottom:12px; font-size:11pt;">Nomor: ${D(d,'nomor')}</div>
+<p style="margin-bottom:6px;">Yang bertanda tangan di bawah ini menjelaskan dengan sesungguhnya bahwa:</p>
 ${PR_N1(d, p, jk)}
-<p>Adalah benar anak dari pernikahan seorang pria:</p>
+<p style="margin:4px 0;">Adalah benar anak dari pernikahan seorang pria:</p>
 ${Parent_N1(d, pa)}
-<p>dengan seorang wanita</p>
+<p style="margin:4px 0;">dengan seorang wanita</p>
 ${Parent_N1(d, pi)}
-<p>Demikian, Surat pengantar ini dibuat dengan mengingat sumpah jabatan dan untuk dipergunakan sebagaimana mestinya.</p>
+<p style="margin-top:6px; margin-bottom:12px;">Demikian, Surat pengantar ini dibuat dengan mengingat sumpah jabatan dan untuk dipergunakan sebagaimana mestinya.</p>
 <div class="sg">
   <div></div>
-  <div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>${kadesSignLabel(d)}<br><br><br><br><u>${D(d,'kades')}</u><br>${d.kadesNip ? 'NIP. ' + esc(d.kadesNip) : ''}</div>
+  <div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>${kadesSignLabel(d)}<br><br><br><u>${D(d,'kades')}</u><br>${d.kadesNip ? 'NIP. ' + esc(d.kadesNip) : ''}</div>
 </div>`;
 
 const N2_tpl = (d) => `
-<div style="float: left; font-size: 11pt; line-height: 1.2; margin-bottom: 15px;">
+<div style="float: left; font-size: 10.5pt; line-height: 1.2; margin-bottom: 10px;">
   Lampiran VI<br>
   Keputusan Dirjen Bimas Islam No. 473 Tahun 2020
 </div>
 <div class="model-box">Model N2</div>
 <div class="clear"></div>
-<h4 style="text-align:center; margin-bottom:10px; font-size:13pt;">FORMULIR PERMOHONAN KEHENDAK NIKAH</h4>
-<table style="width:100%; margin-bottom:20px;">
+<h4 style="text-align:center; margin-bottom:10px; font-size:12pt;">FORMULIR PERMOHONAN KEHENDAK NIKAH</h4>
+<table style="width:100%; margin-bottom:12px;">
   <tr><td style="width:80px">Perihal</td><td style="width:10px">:</td><td>Permohonan kehendak nikah</td><td style="text-align:right">${D(d,'kota')}, ${fmt(d.tglsurat)}</td></tr>
 </table>
 <p>Kepada yth,<br>Kepala KUA Kecamatan /PPN LN ${D(d,'kua')}<br>di ${D(d,'kota')}</p>
-<p style="margin-top:20px">Dengan hormat, kami mengajukan permohonan kehendak nikah untuk atas nama:</p>
-<table style="margin-left:20px; width:90%; margin-bottom:15px;">
+<p style="margin-top:10px">Dengan hormat, kami mengajukan permohonan kehendak nikah untuk atas nama:</p>
+<table style="margin-left:20px; width:90%; margin-bottom:10px;">
   <tr><td style="width:150px">Calon suami</td><td style="width:15px">:</td><td>${D(d,'p_nama')}</td></tr>
   <tr><td>Calon istri</td><td>:</td><td>${D(d,'w_nama')}</td></tr>
   <tr><td>Hari/Tanggal/Jam</td><td>:</td><td>${fmt(d.akadTgl)} / ${D(d,'akadJam')} WIB</td></tr>
   <tr><td>Tempat akad nikah</td><td>:</td><td>${D(d,'akadTempat')}</td></tr>
 </table>
 <p>Bersama ini kami sampaikan surat-surat yang diperlukan untuk diperiksa sebagai berikut:</p>
-<ol style="margin-top:5px; margin-bottom:15px;">
+<ol style="margin-top:4px; margin-bottom:10px; padding-left:20px;">
   <li>Surat pengantar nikah dari Desa/Kelurahan</li>
   <li>Persetujuan calon mempelai</li>
   <li>Fotokopi KTP</li>
@@ -417,30 +417,30 @@ const N2_tpl = (d) => `
   <li>.......................................................................</li>
 </ol>
 <p>Demikian permohonan ini kami sampaikan, kiranya dapat diperiksa, dihadiri, dan dicatat sesuai dengan ketentuan peraturan perundang-undangan.</p>
-<div class="sg" style="margin-top:30px;">
-  <div>Diterima Tanggal .........................<br>Yang menerima,<br>Kepala KUA/PPN Luar Negeri<br><br><br><br>...................................................</div>
-  <div><br>Wassalam,<br>Pemohon<br><br><br><br><u>${D(d,'p_nama')}</u></div>
+<div class="sg" style="margin-top:20px;">
+  <div>Diterima Tanggal .........................<br>Yang menerima,<br>Kepala KUA/PPN Luar Negeri<br><br><br>...................................................</div>
+  <div><br>Wassalam,<br>Pemohon<br><br><br><u>${D(d,'p_nama')}</u></div>
 </div>`;
 
 const N3_tpl = (d) => `
-<div style="float: left; font-size: 11pt; line-height: 1.2; margin-bottom: 15px;">
+<div style="float: left; font-size: 10.5pt; line-height: 1.2; margin-bottom: 10px;">
   Lampiran VII<br>
   Keputusan Dirjen Bimas Islam No. 473 Tahun 2020
 </div>
 <div class="model-box">Model N3</div>
 <div class="clear"></div>
-<table style="width:100%; margin-bottom:20px;">
+<table style="width:100%; margin-bottom:12px;">
   <tr><td style="width:80px">Perihal</td><td style="width:10px">:</td><td>Permohonan pencatatan isbat</td><td style="text-align:right">${D(d,'kota')}, ${fmt(d.tglsurat)}</td></tr>
 </table>
 <p>Kepada yth,<br>Kepala KUA Kecamatan /PPN LN ${D(d,'kua')}<br>di ${D(d,'kota')}</p>
-<p style="margin-top:20px">Dengan hormat, kami mengajukan permohonan pencatatan isbat untuk atas nama:</p>
-<table style="margin-left:20px; width:90%; margin-bottom:15px;">
+<p style="margin-top:10px">Dengan hormat, kami mengajukan permohonan pencatatan isbat untuk atas nama:</p>
+<table style="margin-left:20px; width:90%; margin-bottom:10px;">
   <tr><td style="width:250px">Suami</td><td style="width:15px">:</td><td>${D(d,'p_nama')}</td></tr>
   <tr><td>Istri</td><td>:</td><td>${D(d,'w_nama')}</td></tr>
   <tr><td>Tanggal penetapan Pengadilan Agama</td><td>:</td><td>${d.isbatTgl ? fmt(d.isbatTgl) : '.......................................................'}</td></tr>
 </table>
 <p>Bersama ini kami sampaikan surat-surat yang diperlukan untuk diperiksa sebagai berikut:</p>
-<ol style="margin-top:5px; margin-bottom:15px;">
+<ol style="margin-top:4px; margin-bottom:10px; padding-left:20px;">
   <li>Putusan Isbat</li>
   <li>Fotokopi KTP</li>
   <li>Fotokopi kartu keluarga</li>
@@ -449,34 +449,34 @@ const N3_tpl = (d) => `
   <li>.......................................................................</li>
 </ol>
 <p>Demikian permohonan ini kami sampaikan, kiranya dapat diperiksa, dihadiri, dan dicatat sesuai dengan ketentuan peraturan perundang-undangan.</p>
-<div class="sg" style="margin-top:30px;">
-  <div>Diterima Tanggal .........................<br>Yang menerima,<br>Kepala KUA/PPN Luar Negeri<br><br><br><br>...................................................</div>
-  <div><br>Wassalam,<br>Pemohon<br><br><br><br><u>${D(d,'p_nama')}</u></div>
+<div class="sg" style="margin-top:20px;">
+  <div>Diterima Tanggal .........................<br>Yang menerima,<br>Kepala KUA/PPN Luar Negeri<br><br><br>...................................................</div>
+  <div><br>Wassalam,<br>Pemohon<br><br><br><u>${D(d,'p_nama')}</u></div>
 </div>`;
 
 const N4_tpl = (d) => `
-<div style="float: left; font-size: 11pt; line-height: 1.2; margin-bottom: 15px;">
+<div style="float: left; font-size: 10.5pt; line-height: 1.2; margin-bottom: 10px;">
   Lampiran VIII<br>
   Keputusan Dirjen Bimas Islam No. 473 Tahun 2020
 </div>
 <div class="model-box">Model N4</div>
 <div class="clear"></div>
-<h4 style="margin-bottom:20px">FORMULIR PERSETUJUAN CALON PENGANTIN<br><br>SURAT PERSETUJUAN PENGANTIN</h4>
-<p>Yang bertanda tangan di bawah ini:</p>
-<p>A. Calon suami:</p>
+<h4 style="margin-bottom:10px; font-size:12pt;">FORMULIR PERSETUJUAN CALON PENGANTIN<br><br>SURAT PERSETUJUAN PENGANTIN</h4>
+<p style="margin-bottom:6px;">Yang bertanda tangan di bawah ini:</p>
+<p style="margin-bottom:2px; font-weight:bold;">A. Calon suami:</p>
 ${PR_PDF(d, 'p', 'Bin')}
-<p>B. Calon Istri:</p>
+<p style="margin-bottom:2px; font-weight:bold;">B. Calon Istri:</p>
 ${PR_PDF(d, 'w', 'Binti')}
-<p>Menyatakan dengan sesungguhnya bahwa atas dasar suka rela, dengan kesadaran sendiri, tanpa ada paksaan dari siapapun juga, setuju untuk melangsungkan pernikahan.</p>
-<p>Demikian Surat persetujuan ini di buat untuk digunakan seperlunya.</p>
-<div class="sg" style="margin-top:30px;">
-  <div><br>Calon Suami<br><br><br><br><u>${D(d,'p_nama')}</u></div>
-  <div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>Calon Istri<br><br><br><br><u>${D(d,'w_nama')}</u></div>
+<p style="margin-top:6px; margin-bottom:6px;">Menyatakan dengan sesungguhnya bahwa atas dasar suka rela, dengan kesadaran sendiri, tanpa ada paksaan dari siapapun juga, setuju untuk melangsungkan pernikahan.</p>
+<p style="margin-bottom:15px;">Demikian Surat persetujuan ini di buat untuk digunakan seperlunya.</p>
+<div class="sg" style="margin-top:20px;">
+  <div><br>Calon Suami<br><br><br><u>${D(d,'p_nama')}</u></div>
+  <div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>Calon Istri<br><br><br><u>${D(d,'w_nama')}</u></div>
 </div>`;
 
 const PR_N5_A_B = (d, p, bLabel, prefix) => `
-<table style="width:100%; border-collapse:collapse; margin-bottom:5px;">
-  <tr><td style="width:25px;">${prefix}</td><td style="width:25px;">1.</td><td style="width:225px;">Nama lengkap dan alias</td><td style="width:15px;">:</td><td>${D(d,p+'_nama')}</td></tr>
+<table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
+  <tr><td style="width:25px;">${prefix}</td><td style="width:25px;">1.</td><td style="width:215px;">Nama lengkap dan alias</td><td style="width:15px;">:</td><td>${D(d,p+'_nama')}</td></tr>
   <tr><td></td><td>2.</td><td>${bLabel}</td><td>:</td><td>${D(d,p+'_bin')}</td></tr>
   <tr><td></td><td>3.</td><td>Nomor Induk Kependudukan</td><td>:</td><td>${D(d,p+'_nik')}</td></tr>
   <tr><td></td><td>4.</td><td>Tempat dan tanggal lahir</td><td>:</td><td>${T(d,p)}</td></tr>
@@ -487,8 +487,8 @@ const PR_N5_A_B = (d, p, bLabel, prefix) => `
 </table>`;
 
 const PR_N5_Anak_Mantu = (d, p, bLabel) => `
-<table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
-  <tr><td style="width:25px;">1.</td><td style="width:250px;">Nama lengkap dan alias</td><td style="width:15px;">:</td><td>${D(d,p+'_nama')}</td></tr>
+<table style="width:100%; border-collapse:collapse; margin-bottom:6px;">
+  <tr><td style="width:25px;">1.</td><td style="width:240px;">Nama lengkap dan alias</td><td style="width:15px;">:</td><td>${D(d,p+'_nama')}</td></tr>
   <tr><td>2.</td><td>${bLabel}</td><td>:</td><td>${D(d,p+'_bin')}</td></tr>
   <tr><td>3.</td><td>Nomor Induk Kependudukan</td><td>:</td><td>${D(d,p+'_nik')}</td></tr>
   <tr><td>4.</td><td>Tempat dan tanggal lahir</td><td>:</td><td>${T(d,p)}</td></tr>
@@ -499,25 +499,25 @@ const PR_N5_Anak_Mantu = (d, p, bLabel) => `
 </table>`;
 
 const N5_single = (d, anak, anakJK, ayah, ibu, mantu, mantuJK) => `
-<div style="float: left; font-size: 11pt; line-height: 1.2; margin-bottom: 15px;">
+<div style="float: left; font-size: 10.5pt; line-height: 1.2; margin-bottom: 10px;">
   Lampiran IX<br>
   Keputusan Dirjen Bimas Islam No. 473 Tahun 2020
 </div>
 <div class="model-box">Model N5</div>
 <div class="clear"></div>
-<h4 style="margin-bottom:10px">FORMULIR SURAT IZIN ORANG TUA</h4>
-<h4 style="text-decoration:underline; font-weight:normal; margin-bottom:20px">SURAT IZIN ORANG TUA</h4>
-<p>Yang bertanda tangan di bawah ini:</p>
+<h4 style="margin-bottom:6px; font-size:12pt;">FORMULIR SURAT IZIN ORANG TUA</h4>
+<h4 style="text-decoration:underline; font-weight:normal; margin-bottom:10px; font-size:11.5pt;">SURAT IZIN ORANG TUA</h4>
+<p style="margin-bottom:4px;">Yang bertanda tangan di bawah ini:</p>
 ${PR_N5_A_B(d, ayah, 'Bin', 'A.')}
 ${PR_N5_A_B(d, ibu, 'Binti', 'B.')}
-<p style="margin-top:10px;">adalah ayah dan ibu kandung/wali/pengampu dari :</p>
+<p style="margin-top:4px; margin-bottom:4px;">adalah ayah dan ibu kandung/wali/pengampu dari :</p>
 ${PR_N5_Anak_Mantu(d, anak, 'Bin /Binti')}
-<p>Memberikan izin kepada anak kami untuk melakukan pernikahan dengan:</p>
+<p style="margin-top:4px; margin-bottom:4px;">Memberikan izin kepada anak kami untuk melakukan pernikahan dengan:</p>
 ${PR_N5_Anak_Mantu(d, mantu, 'Bin/Binti')}
-<p>Demikian Surat izin ini di buat dengan kesadaran tanpa ada paksaan dari siapapun dan untuk digunakan seperlunya.</p>
-<div class="sg" style="margin-top:30px;">
-  <div><br>Ayah/wali/pengampu<br><br><br><br>..............................................</div>
-  <div>${D(d,'kota', '....................')}, ${d.tglsurat ? fmt(d.tglsurat) : '....... ...............20.....'}<br>Ibu/wali/pengampu<br><br><br><br>..............................................</div>
+<p style="margin-top:4px; margin-bottom:10px;">Demikian Surat izin ini di buat dengan kesadaran tanpa ada paksaan dari siapapun dan untuk digunakan seperlunya.</p>
+<div class="sg" style="margin-top:15px;">
+  <div><br>Ayah/wali/pengampu<br><br><br>..............................................</div>
+  <div>${D(d,'kota', '....................')}, ${d.tglsurat ? fmt(d.tglsurat) : '....... ...............20.....'}<br>Ibu/wali/pengampu<br><br><br>..............................................</div>
 </div>`;
 
 const N6_single = (d, role) => {
@@ -527,19 +527,19 @@ const N6_single = (d, role) => {
 <div class="model-box">Model N6</div>
 <div class="clear"></div>
 ${kopText(d)}
-<h4 style="text-decoration:underline;">SURAT KETERANGAN KEMATIAN SUAMI/ISTRI</h4>
-<div style="text-align:center; margin-bottom:20px">Nomor: ${D(d,'nomor')}</div>
-<p>Yang bertanda tangan di bawah ini menerangkan dengan sesungguhnya bahwa:</p>
-<p>A.</p>
+<h4 style="text-decoration:underline; font-size:12pt; margin:8px 0;">SURAT KETERANGAN KEMATIAN SUAMI/ISTRI</h4>
+<div style="text-align:center; margin-bottom:12px; font-size:11pt;">Nomor: ${D(d,'nomor')}</div>
+<p style="margin-bottom:4px;">Yang bertanda tangan di bawah ini menerangkan dengan sesungguhnya bahwa:</p>
+<p style="margin-bottom:2px; font-weight:bold;">A.</p>
 ${PR_PDF(d, m, mJK)}
-<p style="margin: 15px 0;">Telah meninggal dunia pada tanggal ${d[m+'_tgl_mati'] ? fmt(d[m+'_tgl_mati']) : '........................................................................................'}<br>Di ${D(d, m+'_tmp_mati', '............................................................................................................................................')}</p>
-<p>Yang bersangkutan adalah suami/istri*) dari:</p>
-<p>B.</p>
+<p style="margin: 8px 0;">Telah meninggal dunia pada tanggal ${d[m+'_tgl_mati'] ? fmt(d[m+'_tgl_mati']) : '........................................................................................'}<br>Di ${D(d, m+'_tmp_mati', '............................................................................................................................................')}</p>
+<p style="margin-bottom:4px;">Yang bersangkutan adalah suami/istri*) dari:</p>
+<p style="margin-bottom:2px; font-weight:bold;">B.</p>
 ${PR_PDF(d, role, role === 'p' ? 'Bin' : 'Binti')}
-<p>Demikian surat keterangan ini dibuat dengan mengingat sumpah jabatan dan untuk dipergunakan seperlunya.</p>
-<div class="sg" style="margin-top:30px; align-items:flex-end;">
-  <div style="text-align:left; font-size:11pt;">*) coret yang tidak perlu<br>**)nama terang</div>
-  <div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>${kadesSignLabel(d)}<br><br><br><br><u>${D(d,'kades')}</u><br>${d.kadesNip ? 'NIP. ' + esc(d.kadesNip) + '<br>' : ''}**)</div>
+<p style="margin-top:6px; margin-bottom:12px;">Demikian surat keterangan ini dibuat dengan mengingat sumpah jabatan dan untuk dipergunakan seperlunya.</p>
+<div class="sg" style="margin-top:20px; align-items:flex-end;">
+  <div style="text-align:left; font-size:10.5pt;">*) coret yang tidak perlu<br>**)nama terang</div>
+  <div>${D(d,'kota')}, ${fmt(d.tglsurat)}<br>${kadesSignLabel(d)}<br><br><br><u>${D(d,'kades')}</u><br>${d.kadesNip ? 'NIP. ' + esc(d.kadesNip) + '<br>' : ''}**)</div>
 </div>`;
 };
 
